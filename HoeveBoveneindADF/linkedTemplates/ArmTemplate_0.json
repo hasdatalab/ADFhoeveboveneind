@@ -274,12 +274,6 @@
 					},
 					"push_refresh_token": {
 						"type": "String"
-					},
-					"start_date": {
-						"type": "String"
-					},
-					"end_date": {
-						"type": "String"
 					}
 				},
 				"annotations": [],

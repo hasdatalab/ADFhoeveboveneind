@@ -1146,7 +1146,7 @@
 						"typeProperties": {
 							"variableName": "start_date",
 							"value": {
-								"value": "startOfDay(adddays(utcnow(),-4))",
+								"value": "@addDays(utcnow(), -4)",
 								"type": "Expression"
 							}
 						}
@@ -1159,7 +1159,7 @@
 						"typeProperties": {
 							"variableName": "end_date",
 							"value": {
-								"value": "startOfDay(utcnow()))",
+								"value": "@utcnow()",
 								"type": "Expression"
 							}
 						}
@@ -1452,12 +1452,6 @@
 					},
 					"push_refresh_token": {
 						"type": "String"
-					},
-					"start_date": {
-						"type": "String"
-					},
-					"end_date": {
-						"type": "String"
 					}
 				},
 				"annotations": [],
@@ -1492,7 +1486,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/period_behaviour/animal/period_behaviour?animal_id=',dataset().id,'&start_date=',dataset().start_date,'&end_date=',dataset().end_date)",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/period_behaviour/animal/period_behaviour?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
