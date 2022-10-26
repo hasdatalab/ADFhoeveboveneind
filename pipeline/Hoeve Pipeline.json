@@ -417,7 +417,15 @@
 									"referenceName": "API_GetCowLying",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -506,7 +514,15 @@
 									"referenceName": "API_GetCowStanding",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -595,7 +611,15 @@
 									"referenceName": "API_GetCowStandups",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -684,7 +708,15 @@
 									"referenceName": "API_GetCowWalking",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -773,7 +805,15 @@
 									"referenceName": "API_GetCowNeckActivity",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -862,7 +902,15 @@
 									"referenceName": "API_GetCowLegActivity",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -969,7 +1017,15 @@
 									"referenceName": "API_GetCowEating",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],

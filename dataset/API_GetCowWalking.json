@@ -8,6 +8,12 @@
 		"parameters": {
 			"id": {
 				"type": "string"
+			},
+			"start_date": {
+				"type": "string"
+			},
+			"end_date": {
+				"type": "string"
 			}
 		},
 		"folder": {
@@ -17,7 +23,7 @@
 		"type": "RestResource",
 		"typeProperties": {
 			"relativeUrl": {
-				"value": "@concat('https://api.nedap-bi.com/v1/behaviour/walking/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+				"value": "@concat('https://api.nedap-bi.com/v1/behaviour/walking/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 				"type": "Expression"
 			}
 		},
