@@ -1,0 +1,3500 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name"
+		},
+		"Nedap_API": {
+			"type": "string"
+		},
+		"DWH_Hoeve_boveneind": {
+			"type": "string"
+		},
+		"errorlogblob": {
+			"type": "string"
+		},
+		"New_Postgre_SQL_DWH": {
+			"type": "string"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Hoeve Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Update Cows In DWH",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Get Facts To Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 Update Cows Dataflow",
+								"type": "DataFlowReference"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Copy Cows To Staging",
+						"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "execute_refresh_token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"preCopyScript": "truncate staging.nedapcowid\n",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['id']"
+										},
+										"sink": {
+											"name": "id",
+											"type": "Int64"
+										}
+									},
+									{
+										"source": {
+											"path": "[['condition']"
+										},
+										"sink": {
+											"name": "condition",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['group_id']"
+										},
+										"sink": {
+											"name": "group_id",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"path": "[['life_number']"
+										},
+										"sink": {
+											"name": "life_number",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['responder1']"
+										},
+										"sink": {
+											"name": "responder1",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['responder2']"
+										},
+										"sink": {
+											"name": "responder2",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['responder3']"
+										},
+										"sink": {
+											"name": "responder3",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['number']"
+										},
+										"sink": {
+											"name": "number",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"path": "[['uuid']"
+										},
+										"sink": {
+											"name": "uuid",
+											"type": "String"
+										}
+									}
+								],
+								"collectionReference": "$['animals']",
+								"mapComplexValuesToString": false
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "API_GetCows",
+								"type": "DatasetReference"
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_staging_nedapcowid",
+								"type": "DatasetReference"
+							}
+						]
+					},
+					{
+						"name": "For Every Cow",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy Cows To Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "view_staging_CowIDView",
+								"type": "DatasetReference"
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Get Facts To Staging",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "For Every Cow",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('For Every Cow').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Behaviour per cow",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['start_time']"
+													},
+													"sink": {
+														"name": "start_time",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['type']"
+													},
+													"sink": {
+														"name": "type",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "[['duration']"
+													},
+													"sink": {
+														"name": "duration",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['period_behaviours']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowBehaviour",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowbehaviour",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "Lying per cow",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['quarter']"
+													},
+													"sink": {
+														"name": "quarter",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['lying_quarters']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowLying",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowlying",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "Standing per cow",
+									"description": "truncate staging.\"Cow Standing\"",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['quarter']"
+													},
+													"sink": {
+														"name": "quarter",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['standing_quarters']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowStanding",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowstanding",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "Standups per cow",
+									"description": "truncate public.\"Cow Standups\"",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['quarter']"
+													},
+													"sink": {
+														"name": "quarter",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['standups_quarters']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowStandups",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowstandups",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "Walking per cow",
+									"description": "truncate staging.\"nedapcowwalking\"",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['quarter']"
+													},
+													"sink": {
+														"name": "quarter",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['walking_quarters']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowWalking",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowwalking",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "Neck Activity per cow",
+									"description": "truncate staging.\"nedapcowactivityneck\"",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['quarter']"
+													},
+													"sink": {
+														"name": "quarter",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['neck_activity_quarters']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowNeckActivity",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowactivityneck",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "steps per cow",
+									"description": "truncate staging.\"nedapcoweating\"",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "$['leg_activity_quarters'][0]['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "$['leg_activity_quarters'][0]['quarter']"
+													},
+													"sink": {
+														"name": "quarter",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "$['leg_activity_quarters'][0]['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['steps_quarters']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowLegActivity",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcowsteps",
+											"type": "DatasetReference"
+										}
+									]
+								},
+								{
+									"name": "Eating per cow",
+									"description": "truncate staging.\"nedapcoweating\"",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['date']"
+													},
+													"sink": {
+														"name": "date",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['total']"
+													},
+													"sink": {
+														"name": "total",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "[['average']"
+													},
+													"sink": {
+														"name": "average",
+														"type": "Int32"
+													}
+												},
+												{
+													"source": {
+														"path": "[['attention']"
+													},
+													"sink": {
+														"name": "attention",
+														"type": "String"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['eating_summaries']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetCowEating",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapcoweating",
+											"type": "DatasetReference"
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Truncate Staging",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Get Facts To DWH",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate staging.nedapcowid;\ntruncate staging.nedapcowactivityneck;\ntruncate staging.nedapcowactivityleg;\ntruncate staging.nedapcowbehaviour;\ntruncate staging.nedapcoweating;\ntruncate staging.nedapcowlying;\ntruncate staging.nedapcowstanding;\ntruncate staging.nedapcowstandups;\ntruncate staging.nedapcowsteps;\ntruncate staging.nedapcowwalking;\n-- truncate staging.nedaplocationdata;\n-- truncate staging.geamelkrobot;\n\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_DWH_cow_eating",
+								"type": "DatasetReference"
+							}
+						}
+					},
+					{
+						"name": "execute_refresh_token",
+						"description": "executes the \"refresh_access_token\" pipeline so we have a fresh access token",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "refresh_acces_token",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true
+						}
+					},
+					{
+						"name": "Get Facts To DWH",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Update Cows In DWH",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 Update Facts Dataflow",
+								"type": "DataFlowReference"
+							},
+							"compute": {
+								"coreCount": 16,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2022-10-20T14:58:40Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows Dataflow')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCows')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowid')]",
+				"[concat(variables('factoryId'), '/datasets/view_staging_CowIDView')]",
+				"[concat(variables('factoryId'), '/datasets/table_DWH_cow_eating')]",
+				"[concat(variables('factoryId'), '/pipelines/refresh_acces_token')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 Update Facts Dataflow')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowBehaviour')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowbehaviour')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowLying')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowlying')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowStanding')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowstanding')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowStandups')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowstandups')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowWalking')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowwalking')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowNeckActivity')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowactivityneck')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowLegActivity')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowsteps')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowEating')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcoweating')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 Update Cows Dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Updates the Cow Dim table in the PostGreDWH, by inserting new cows and updating excisting ones with new information while flagging old ones as on",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "view_staging_StagingCowView",
+								"type": "DatasetReference"
+							},
+							"name": "StagingCows"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_DWH_dim_cow",
+								"type": "DatasetReference"
+							},
+							"name": "DWHCows"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "table_DWH_dim_cow",
+								"type": "DatasetReference"
+							},
+							"name": "SinkNewCow"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_DWH_dim_cow",
+								"type": "DatasetReference"
+							},
+							"name": "SinkUpdateCow"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_DWH_dim_cow",
+								"type": "DatasetReference"
+							},
+							"name": "SinkUpdateInactive"
+						}
+					],
+					"transformations": [
+						{
+							"name": "NullFilter"
+						},
+						{
+							"name": "GetTimestamp"
+						},
+						{
+							"name": "MatchCow"
+						},
+						{
+							"name": "SelectColumn"
+						},
+						{
+							"name": "NewCow"
+						},
+						{
+							"name": "CheckForChange"
+						},
+						{
+							"name": "UpdateCow"
+						},
+						{
+							"name": "FilteredDWHCows"
+						}
+					],
+					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nStagingCows filter(isNull(number) != true() || isNull(id) != true() || isNull(life_number) != true()) ~> NullFilter\nNullFilter derive({change date} = currentDate(),\n\t\t{change timestamp} = currentTimestamp()) ~> GetTimestamp\nGetTimestamp, FilteredDWHCows lookup(id == nedap_id,\n\tmultiple: false,\n\tpickup: 'first',\n\tdesc(end_date, true),\n\tbroadcast: 'auto')~> MatchCow\nMatchCow select(mapColumn(\n\t\tid,\n\t\tcondition,\n\t\tlife_number,\n\t\tresponder1,\n\t\tresponder2,\n\t\tnumber,\n\t\tuuid,\n\t\tgroup_id,\n\t\t{change date},\n\t\t{change timestamp},\n\t\tdim_cow_id,\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date,\n\t\tgroup,\n\t\tlast_updated\n\t),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> SelectColumn\nSelectColumn split(isNull(end_date) == true(),\n\tdisjoint: true) ~> NewCow@(NewCow, UpdateCow)\nNewCow@UpdateCow, FilteredDWHCows exists(NewCow@UpdateCow@nedap_id == DWHCows@nedap_id &&\r\n(\r\n    responder1 != DWHCows@leg_responder\r\n || responder2 != DWHCows@neck_responder\r\n || number != DWHCows@cownumber\r\n || group_id != DWHCows@group\r\n),\n\tnegate:false,\n\tbroadcast: 'both')~> CheckForChange\nCheckForChange alterRow(updateIf(true())) ~> UpdateCow\nDWHCows filter(equals(end_date, toDate('9999-01-01'))) ~> FilteredDWHCows\nNewCow@NewCow sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tlifenumber = life_number,\n\t\tleg_responder = responder1,\n\t\tneck_responder = responder2,\n\t\tcownumber = number,\n\t\tnedap_id = id,\n\t\tstart_date = {change date},\n\t\tgroup = group_id,\n\t\tlast_updated = {change timestamp}\n\t)) ~> SinkNewCow\nCheckForChange sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tlifenumber = life_number,\n\t\tcownumber = number,\n\t\tleg_responder = responder1,\n\t\tneck_responder = responder2,\n\t\tstart_date = {change date},\n\t\tnedap_id,\n\t\tgroup = group_id,\n\t\tlast_updated = {change timestamp}\n\t)) ~> SinkUpdateCow\nUpdateCow sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['dim_cow_id'],\n\tskipKeyWrites:true,\n\tformat: 'table',\n\tmapColumn(\n\t\tend_date = {change date},\n\t\tlast_updated = {change timestamp},\n\t\tdim_cow_id = id\n\t)) ~> SinkUpdateInactive"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/view_staging_StagingCowView')]",
+				"[concat(variables('factoryId'), '/datasets/table_DWH_dim_cow')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCows')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": "https://api.nedap-bi.com/v1/animals/"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowid')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "condition",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "life_number",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder1",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder2",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder3",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "number",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "uuid",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "group_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowid"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/view_staging_CowIDView')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "CowIDView"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_DWH_cow_eating')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Gegevensset.\n\nTabel: cow_eating uit postgresql database: dwh_hoeve_boveneind",
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "DWH Hoeve boveneind"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_time_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_eating_time",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "average_eating_time",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "attention_needed",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "warehouse",
+					"table": "cow_eating"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/refresh_acces_token')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "get_auth_code",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "get_refresh_token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "get_client_id",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "get_client_secret",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://nedap-bi.com/oauth/token",
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/x-www-form-urlencoded"
+							},
+							"body": {
+								"value": "@concat('client_id=',string(activity('get_client_id').output.value),'&client_secret=',string(activity('get_client_secret').output.value),'&grant_type=refresh_token','&refresh_token=',string(activity('get_refresh_token').output.value))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "get_refresh_token",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://boveneindkeyvault.vault.azure.net/secrets/refresh-token?api-version=7.3",
+							"method": "GET",
+							"turnOffAsync": false,
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "get_client_id",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://boveneindkeyvault.vault.azure.net/secrets/client-id?api-version=7.3 ",
+							"method": "GET",
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "get_client_secret",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://boveneindkeyvault.vault.azure.net/secrets/client-secret?api-version=7.3",
+							"method": "GET",
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "update_acces_token",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "set access token variable",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://boveneindkeyvault.vault.azure.net/secrets/access-token?api-version=7.3",
+							"method": "PUT",
+							"headers": {
+								"content-type": "application/json"
+							},
+							"body": {
+								"value": "@concat('{\"value\":', variables('push_access_token'),'}')",
+								"type": "Expression"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "update_refresh_token",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "set refresh token variable",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://boveneindkeyvault.vault.azure.net//secrets/refresh-token?api-version=7.3",
+							"method": "PUT",
+							"headers": {
+								"content-type": "application/json"
+							},
+							"body": {
+								"value": "@concat('{\"value\":', variables('push_refresh_token'),'}')",
+								"type": "Expression"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "set refresh token variable",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "get_auth_code",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "push_refresh_token",
+							"value": {
+								"value": "@concat('\"', string(activity('get_auth_code').output.refresh_token),'\"')",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "set access token variable",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "get_auth_code",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "push_access_token",
+							"value": {
+								"value": "@concat('\"','bearer ', string(activity('get_auth_code').output.access_token),'\"')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"variables": {
+					"refresh_token": {
+						"type": "String"
+					},
+					"access_token": {
+						"type": "String"
+					},
+					"get_authcode": {
+						"type": "String"
+					},
+					"push_access_token": {
+						"type": "String"
+					},
+					"push_refresh_token": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-06-24T19:20:49Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 Update Facts Dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Gets the collected data from the staging and finds the active matching cow from the DWH 'Cow Dim'",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowactivityneck",
+								"type": "DatasetReference"
+							},
+							"name": "NeckActivityStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcoweating",
+								"type": "DatasetReference"
+							},
+							"name": "EatingStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowbehaviour",
+								"type": "DatasetReference"
+							},
+							"name": "BehaviourStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_geamelkrobot",
+								"type": "DatasetReference"
+							},
+							"name": "MilkingStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedaplocationdata",
+								"type": "DatasetReference"
+							},
+							"name": "LocationStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowlying",
+								"type": "DatasetReference"
+							},
+							"name": "lyingStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowstanding",
+								"type": "DatasetReference"
+							},
+							"name": "StandingStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowwalking",
+								"type": "DatasetReference"
+							},
+							"name": "WalkingStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowstandups",
+								"type": "DatasetReference"
+							},
+							"name": "StandupsStaging"
+						},
+						{
+							"dataset": {
+								"referenceName": "table_staging_nedapcowsteps",
+								"type": "DatasetReference"
+							},
+							"name": "StepsStaging"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "table_processing_neck_activity",
+								"type": "DatasetReference"
+							},
+							"name": "NeckActivityDWH",
+							"rejectedDataLinkedService": {
+								"referenceName": "[parameters('errorlogblob')]",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "table_processing_cow_eating",
+								"type": "DatasetReference"
+							},
+							"name": "EatingDWH",
+							"rejectedDataLinkedService": {
+								"referenceName": "[parameters('errorlogblob')]",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "table_processing_cow_behaviour",
+								"type": "DatasetReference"
+							},
+							"name": "BehaviourDWH",
+							"rejectedDataLinkedService": {
+								"referenceName": "[parameters('errorlogblob')]",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "table_processing_cow_milkings",
+								"type": "DatasetReference"
+							},
+							"name": "MilkingDWH",
+							"rejectedDataLinkedService": {
+								"referenceName": "[parameters('errorlogblob')]",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "table_processing_cow_location",
+								"type": "DatasetReference"
+							},
+							"name": "LocationDWH",
+							"rejectedDataLinkedService": {
+								"referenceName": "[parameters('errorlogblob')]",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "table_processing_leg_activity",
+								"type": "DatasetReference"
+							},
+							"name": "LegActivityDWH"
+						}
+					],
+					"transformations": [
+						{
+							"name": "NeckActivityLookup",
+							"flowlet": {
+								"referenceName": "V2 DWH Lookup Neck Activity Flowlet",
+								"type": "DataFlowReference"
+							}
+						},
+						{
+							"name": "EatingLookup",
+							"flowlet": {
+								"referenceName": "V2 DWH Lookup Eating Flowlet",
+								"type": "DataFlowReference"
+							}
+						},
+						{
+							"name": "BehaviourLookup",
+							"flowlet": {
+								"referenceName": "V2 DWH Lookup Behaviour Flowlet",
+								"type": "DataFlowReference"
+							}
+						},
+						{
+							"name": "MilkingLookup",
+							"flowlet": {
+								"referenceName": "V2 DWH Lookup Milking Flowlet",
+								"type": "DataFlowReference"
+							}
+						},
+						{
+							"name": "LocationLookup",
+							"flowlet": {
+								"referenceName": "V2 DWH Lookup Location Flowlet",
+								"type": "DataFlowReference"
+							}
+						},
+						{
+							"name": "flowlet1",
+							"flowlet": {
+								"referenceName": "V2 DWH Lookup Leg Activity Flowlet",
+								"type": "DataFlowReference"
+							}
+						},
+						{
+							"name": "JoinStanding"
+						},
+						{
+							"name": "joinWalking"
+						},
+						{
+							"name": "JoinStandups"
+						},
+						{
+							"name": "JoinSteps"
+						},
+						{
+							"name": "select"
+						}
+					],
+					"script": "source(output(\n\t\tanimal_id as long,\n\t\tquarter as timestamp,\n\t\ttotal as integer,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> NeckActivityStaging\nsource(output(\n\t\tanimal_id as long,\n\t\tdate as timestamp,\n\t\ttotal as integer,\n\t\taverage as integer,\n\t\tattention as string,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> EatingStaging\nsource(output(\n\t\tanimal_id as long,\n\t\tstart_time as timestamp,\n\t\ttype as integer,\n\t\tduration as integer,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> BehaviourStaging\nsource(output(\n\t\tkoenummer as integer,\n\t\tlactatienummer as integer,\n\t\t{Kwartier geleidbaarheid ruwe waarde rechts achter} as integer,\n\t\t{Kwartier geleidbaarheid ruwe waarde links achter} as integer,\n\t\t{Kwartier geleidbaarheid ruwe waarde links voor} as integer,\n\t\t{Kwartier geleidbaarheid ruwe waarde rechts voor} as integer,\n\t\t{Robotbezoek datetime} as timestamp,\n\t\tlactatiedagen as integer,\n\t\trespondernummer as long,\n\t\t{Aantal beker aansluitpogingen rechts achter} as integer,\n\t\t{Aantal beker aansluitpogingen links achter} as integer,\n\t\t{Aantal beker aansluitpogingen links voor} as integer,\n\t\t{Aantal beker aansluitpogingen rechts voor} as integer,\n\t\tmelkduur as integer,\n\t\t{Melkstroomherkenningstijd lv} as integer,\n\t\t{Melkstroomherkenningstijd rv} as integer,\n\t\t{Melkstroomherkenningstijd la} as integer,\n\t\t{Melkstroomherkenningstijd ra} as integer,\n\t\tmelkhoeveelheid as float,\n\t\t{Error code} as integer,\n\t\tkoeleeftijd as integer,\n\t\t{Roodheidsgraad achter rechts} as integer,\n\t\t{Roodheidsgraad achter links} as integer,\n\t\t{Roodheidsgraad vooraan links} as integer,\n\t\t{Roodheidsgraad vooraan rechts} as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> MilkingStaging\nsource(output(\n\t\ttimestamp as timestamp,\n\t\tresponder as long,\n\t\tx as long,\n\t\ty as long,\n\t\tquality as long\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> LocationStaging\nsource(output(\n\t\tanimal_id as long,\n\t\tquarter as timestamp,\n\t\ttotal as integer,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> lyingStaging\nsource(output(\n\t\tanimal_id as long,\n\t\ttotal as integer,\n\t\tquarter as timestamp,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StandingStaging\nsource(output(\n\t\tanimal_id as long,\n\t\ttotal as integer,\n\t\tquarter as timestamp,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> WalkingStaging\nsource(output(\n\t\tanimal_id as long,\n\t\ttotal as integer,\n\t\tquarter as timestamp,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StandupsStaging\nsource(output(\n\t\tanimal_id as long,\n\t\ttotal as integer,\n\t\tquarter as timestamp,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StepsStaging\nNeckActivityStaging compose(mapColumn(\n\t\tanimal_id,\n\t\tquarter,\n\t\ttotal\n\t),\n\tcomposition: 'V2 DWH Lookup Neck Activity Flowlet') ~> NeckActivityLookup@(DWHOutput)\nEatingStaging compose(mapColumn(\n\t\tanimal_id,\n\t\tdate,\n\t\ttotal,\n\t\taverage,\n\t\tattention\n\t),\n\tcomposition: 'V2 DWH Lookup Eating Flowlet') ~> EatingLookup@(CowEating)\nBehaviourStaging compose(mapColumn(\n\t\tanimal_id,\n\t\tstart_time,\n\t\ttype,\n\t\tduration,\n\t\tstatus\n\t),\n\tcomposition: 'V2 DWH Lookup Behaviour Flowlet') ~> BehaviourLookup@(CowBehaviour)\nMilkingStaging compose(mapColumn(\n\t\tkoenummer,\n\t\tlactatienummer,\n\t\t{Kwartier geleidbaarheid ruwe waarde rechts achter},\n\t\t{Kwartier geleidbaarheid ruwe waarde links achter},\n\t\t{Kwartier geleidbaarheid ruwe waarde links voor},\n\t\t{Kwartier geleidbaarheid ruwe waarde rechts voor},\n\t\t{Robotbezoek datetime},\n\t\tlactatiedagen,\n\t\trespondernummer,\n\t\t{Aantal beker aansluitpogingen rechts achter},\n\t\t{Aantal beker aansluitpogingen links achter},\n\t\t{Aantal beker aansluitpogingen links voor},\n\t\t{Aantal beker aansluitpogingen rechts voor},\n\t\tmelkduur,\n\t\t{Melkstroomherkenningstijd lv},\n\t\t{Melkstroomherkenningstijd rv},\n\t\t{Melkstroomherkenningstijd la},\n\t\t{Melkstroomherkenningstijd ra},\n\t\tmelkhoeveelheid,\n\t\t{Error code},\n\t\tkoeleeftijd,\n\t\t{Roodheidsgraad achter rechts},\n\t\t{Roodheidsgraad achter links},\n\t\t{Roodheidsgraad vooraan links},\n\t\t{Roodheidsgraad vooraan rechts}\n\t),\n\tcomposition: 'V2 DWH Lookup Milking Flowlet') ~> MilkingLookup@(CowMilkings)\nLocationStaging compose(mapColumn(\n\t\ttimestamp,\n\t\tresponder,\n\t\tx,\n\t\ty,\n\t\tquality\n\t),\n\tcomposition: 'V2 DWH Lookup Location Flowlet') ~> LocationLookup@(CowLocation)\nselect compose(mapColumn(\n\t\tanimal_id,\n\t\tquarter,\n\t\ttotal_time_lying,\n\t\ttotal_time_standing,\n\t\ttotal_time_walking,\n\t\ttotal_standups,\n\t\ttotal_steps\n\t),\n\tcomposition: 'V2 DWH Lookup Leg Activity Flowlet') ~> flowlet1@(DWHOutput)\nlyingStaging, StandingStaging join(lyingStaging@animal_id == StandingStaging@animal_id\n\t&& lyingStaging@quarter == StandingStaging@quarter,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> JoinStanding\nJoinStanding, WalkingStaging join(lyingStaging@animal_id == WalkingStaging@animal_id\n\t&& lyingStaging@quarter == WalkingStaging@quarter,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> joinWalking\njoinWalking, StandupsStaging join(lyingStaging@animal_id == StandupsStaging@animal_id\n\t&& lyingStaging@quarter == StandupsStaging@quarter,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> JoinStandups\nJoinStandups, StepsStaging join(lyingStaging@animal_id == StepsStaging@animal_id\n\t&& lyingStaging@quarter == StepsStaging@quarter,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> JoinSteps\nJoinSteps select(mapColumn(\n\t\tanimal_id = lyingStaging@animal_id,\n\t\tquarter = lyingStaging@quarter,\n\t\ttotal_time_lying = lyingStaging@total,\n\t\ttotal_time_standing = StandingStaging@total,\n\t\ttotal_time_walking = WalkingStaging@total,\n\t\ttotal_standups = StandupsStaging@total,\n\t\ttotal_steps = StepsStaging@total\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> select\nNeckActivityLookup@DWHOutput sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_time_id as integer,\n\t\tdim_date_id as integer,\n\t\ttotal_neck_movements as integer,\n\t\ttotal_time_eating as integer,\n\t\ttotal_time_ruminating as integer\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tbatchSize: 1000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tdim_time_id,\n\t\tdim_date_id,\n\t\ttotal_neck_movements = total\n\t)) ~> NeckActivityDWH\nEatingLookup@CowEating sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_time_id as integer,\n\t\tdim_date_id as integer,\n\t\ttotal_eating_time as integer,\n\t\taverage_eating_time as integer,\n\t\tattention_needed as boolean\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tbatchSize: 1000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tdim_time_id,\n\t\tdim_date_id,\n\t\ttotal_eating_time = total,\n\t\taverage_eating_time = average,\n\t\tattention_needed = attention\n\t)) ~> EatingDWH\nBehaviourLookup@CowBehaviour sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_time_id as integer,\n\t\tdim_date_id as integer,\n\t\ttype_of_behaviour as integer,\n\t\tduration_behaviour as integer\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tbatchSize: 1000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tdim_time_id,\n\t\tdim_date_id,\n\t\ttype_of_behaviour = type,\n\t\tduration_behaviour = duration\n\t)) ~> BehaviourDWH\nMilkingLookup@CowMilkings sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_error_code_id as integer,\n\t\tdim_time_id as integer,\n\t\tdim_date_id as integer,\n\t\tquarterconductbr as integer,\n\t\tquarterconductbl as integer,\n\t\tquarterconductfl as integer,\n\t\tquarterconductfr as integer,\n\t\tdegreeofrednessbr as integer,\n\t\tdegreeofrednessbl as integer,\n\t\tdegreeofrednessfl as integer,\n\t\tdegreeofrednessfr as integer,\n\t\tnrconnectattemptbr as integer,\n\t\tnrconnectattemeptbl as integer,\n\t\tnrconnectattemeptfl as integer,\n\t\tnrconnectattemptfr as integer,\n\t\tmilkingtimeudderbr as integer,\n\t\tmilkingtimeudderbl as integer,\n\t\tmilkingtimeudderfl as integer,\n\t\tmilkingtimeudderfr as integer,\n\t\tvisitmilkamount as double,\n\t\tlactationdays as integer,\n\t\tcowage as integer,\n\t\tlactationnumer as integer,\n\t\tmilkingtimetotal as integer\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tbatchSize: 1000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tdim_error_code_id,\n\t\tdim_time_id,\n\t\tdim_date_id,\n\t\tquarterconductbr,\n\t\tquarterconductbl,\n\t\tquarterconductfl,\n\t\tquarterconductfr,\n\t\tdegreeofrednessbr,\n\t\tdegreeofrednessbl,\n\t\tdegreeofrednessfl,\n\t\tdegreeofrednessfr,\n\t\tnrconnectattemptbr,\n\t\tnrconnectattemeptbl = nrconnectattemptbl,\n\t\tnrconnectattemeptfl = nrconnectattemptfl,\n\t\tnrconnectattemptfr,\n\t\tmilkingtimeudderbr,\n\t\tmilkingtimeudderbl,\n\t\tmilkingtimeudderfl,\n\t\tmilkingtimeudderfr,\n\t\tvisitmilkamount,\n\t\tlactationdays,\n\t\tcowage,\n\t\tlactationnumer,\n\t\tmilkingtimetotal\n\t)) ~> MilkingDWH\nLocationLookup@CowLocation sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_date_id as integer,\n\t\ttime as timestamp,\n\t\tx_coordinate as integer,\n\t\ty_coordinate as integer,\n\t\tquality_position as integer\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tbatchSize: 1000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tdim_date_id,\n\t\ttime = timestamp,\n\t\tx_coordinate = x,\n\t\ty_coordinate = y,\n\t\tquality_position = quality\n\t)) ~> LocationDWH\nflowlet1@DWHOutput sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_time_id as integer,\n\t\tdim_date_id as integer,\n\t\ttotal_time_lying as integer,\n\t\ttotal_time_standing as integer,\n\t\ttotal_time_walking as integer,\n\t\ttotal_standups as integer,\n\t\ttotal_steps as integer\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> LegActivityDWH"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/V2 DWH Lookup Neck Activity Flowlet')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 DWH Lookup Eating Flowlet')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 DWH Lookup Behaviour Flowlet')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 DWH Lookup Milking Flowlet')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 DWH Lookup Location Flowlet')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 DWH Lookup Leg Activity Flowlet')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowactivityneck')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcoweating')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowbehaviour')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_geamelkrobot')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedaplocationdata')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowlying')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowstanding')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowwalking')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowstandups')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowsteps')]",
+				"[concat(variables('factoryId'), '/datasets/table_processing_neck_activity')]",
+				"[concat(variables('factoryId'), '/datasets/table_processing_cow_eating')]",
+				"[concat(variables('factoryId'), '/datasets/table_processing_cow_behaviour')]",
+				"[concat(variables('factoryId'), '/datasets/table_processing_cow_milkings')]",
+				"[concat(variables('factoryId'), '/datasets/table_processing_cow_location')]",
+				"[concat(variables('factoryId'), '/datasets/table_processing_leg_activity')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/view_staging_StagingCowView')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "condition",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "life_number",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder1",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder2",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder3",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "number",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "uuid",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "group_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "StagingCowView"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_DWH_dim_cow')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "DWH Hoeve boveneind"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lifenumber",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "leg_responder",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "neck_responder",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "cownumber",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "nedap_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "start_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "end_date",
+						"type": "date",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "group",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "last_updated",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "warehouse",
+					"table": "dim_cow"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowBehaviour')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/period_behaviour/animal/period_behaviour?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowbehaviour')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "start_time",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "type",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "duration",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowbehaviour"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowLying')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/lying/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowlying')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowlying"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowStanding')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/standing/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowstanding')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowstanding"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowStandups')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/standups/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowstandups')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowstandups"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowWalking')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/walking/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowwalking')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowwalking"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowNeckActivity')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/neck_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowactivityneck')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowactivityneck"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowLegActivity')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/leg_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowsteps')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowsteps"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowEating')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('Nedap_API')]",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/day_summaries?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcoweating')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "date",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarters",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "average",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "attention",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcoweating"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Neck Activity Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "DimDate"
+						},
+						{
+							"name": "DimTime"
+						},
+						{
+							"name": "DimCow"
+						}
+					],
+					"sinks": [],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> "
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Eating Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy of DWHLookupFlowlet ",
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "DimDate"
+						},
+						{
+							"name": "DimTime"
+						},
+						{
+							"name": "DimCows"
+						}
+					],
+					"sinks": [],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> "
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Behaviour Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "DimTime"
+						},
+						{
+							"name": "DimDate"
+						},
+						{
+							"name": "DimCows"
+						}
+					],
+					"sinks": [],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> "
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Milking Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "DimTime"
+						},
+						{
+							"name": "DimDate"
+						},
+						{
+							"name": "DimMilkingCode"
+						},
+						{
+							"name": "DimCow"
+						}
+					],
+					"sinks": [],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> "
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Location Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "DimDate"
+						},
+						{
+							"name": "DimCow"
+						}
+					],
+					"sinks": [],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> "
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Leg Activity Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "DimDate"
+						},
+						{
+							"name": "DimTime"
+						},
+						{
+							"name": "DimCow"
+						}
+					],
+					"sinks": [],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> ",
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false) ~> "
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_geamelkrobot')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('New_Postgre_SQL_DWH')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "koenummer",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lactatienummer",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde rechts achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde links achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde links voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde rechts voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Robotbezoek datetime",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lactatiedagen",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "respondernummer",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen rechts achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen links achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen links voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen rechts voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "melkduur",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd lv",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd rv",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd la",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd ra",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "melkhoeveelheid",
+						"type": "real",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Error code",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "koeleeftijd",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad achter rechts",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad achter links",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad vooraan links",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad vooraan rechts",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "geamelkrobot"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedaplocationdata')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('New_Postgre_SQL_DWH')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "timestamp",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "x",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "y",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quality",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedaplocationdata"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_processing_neck_activity')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processing"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_time_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_neck_movements",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_time_eating",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_time_ruminating",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "processing",
+					"table": "cow_neck_activity"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_processing_cow_eating')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processing"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_time_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_eating_time",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "average_eating_time",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "attention_needed",
+						"type": "boolean",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "processing",
+					"table": "cow_eating"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_processing_cow_behaviour')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processing"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_time_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "type_of_behaviour",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "duration_behaviour",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "processing",
+					"table": "cow_behaviour"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_processing_cow_milkings')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processing"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_error_code_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_time_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarterconductbr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarterconductbl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarterconductfl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarterconductfr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "degreeofrednessbr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "degreeofrednessbl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "degreeofrednessfl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "degreeofrednessfr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "nrconnectattemptbr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "nrconnectattemeptbl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "nrconnectattemeptfl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "nrconnectattemptfr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "milkingtimeudderbr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "milkingtimeudderbl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "milkingtimeudderfl",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "milkingtimeudderfr",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "visitmilkamount",
+						"type": "double precision",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lactationdays",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "cowage",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lactationnumer",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "milkingtimetotal",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "processing",
+					"table": "cow_milkings"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_processing_cow_location')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processing"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "time",
+						"type": "time without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "x_coordinate",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "y_coordinate",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quality_position",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "processing",
+					"table": "cow_location"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_processing_leg_activity')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "[parameters('DWH_Hoeve_boveneind')]",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processing"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "dim_cow_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_time_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "dim_date_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_time_lying",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_time_standing",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_time_walking",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_standups",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total_steps",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "processing",
+					"table": "cow_leg_activity"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
