@@ -23,7 +23,7 @@
 		"type": "RestResource",
 		"typeProperties": {
 			"relativeUrl": {
-				"value": "@concat('https://api.nedap-bi.com/v1/behaviour/period_behaviour/animal/period_behaviour?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+				"value": "@concat('https://api.nedap-bi.com/v1/behaviour/period_behaviour/animal/period_behaviour?animal_id=',dataset().id,'&start_date=',dataset().start_date,'&end_date=',dataset().end_date)",
 				"type": "Expression"
 			}
 		},
