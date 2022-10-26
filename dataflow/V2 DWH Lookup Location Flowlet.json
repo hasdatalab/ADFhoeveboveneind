@@ -1,0 +1,106 @@
+{
+	"name": "V2 DWH Lookup Location Flowlet",
+	"properties": {
+		"type": "Flowlet",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimCow"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "CowLookup"
+				},
+				{
+					"name": "SplitDatetime"
+				},
+				{
+					"name": "DateLookup"
+				},
+				{
+					"name": "Nullfilter"
+				},
+				{
+					"name": "LocationStaging"
+				},
+				{
+					"name": "CowLocation"
+				}
+			],
+			"scriptLines": [
+				"input(output(",
+				"          timestamp as timestamp,",
+				"          responder as long,",
+				"          x as long,",
+				"          y as long,",
+				"          quality as long",
+				"     ),",
+				"     order: 0) ~> LocationStaging",
+				"source(output(",
+				"          dim_date_id as integer,",
+				"          date as date,",
+				"          day as integer,",
+				"          day_name as string,",
+				"          week as integer,",
+				"          iso_week as integer,",
+				"          day_of_week as integer,",
+				"          month as integer,",
+				"          month_name as string,",
+				"          quarter as integer,",
+				"          year as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_date',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+				"source(output(",
+				"          dim_cow_id as integer,",
+				"          lifenumber as string,",
+				"          leg_responder as long,",
+				"          neck_responder as long,",
+				"          cownumber as integer,",
+				"          start_date as date,",
+				"          end_date as date,",
+				"          GROUP as integer,",
+				"          last_updated as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_cow',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
+				"LocationStaging, DimCow lookup(responder == neck_responder,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> CowLookup",
+				"CowLookup derive({date calc} = trim(split(toString(timestamp),' ')[1])) ~> SplitDatetime",
+				"SplitDatetime, DimDate lookup({date calc} == toString(date),",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> DateLookup",
+				"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false()) ~> Nullfilter",
+				"Nullfilter output(mapColumn(",
+				"          each(match(true()))",
+				"     )) ~> CowLocation"
+			]
+		}
+	}
+}

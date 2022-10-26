@@ -1,0 +1,51 @@
+{
+	"name": "table_processing_cow_behaviour",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWH_Hoeve_boveneind",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "processing"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "dim_cow_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "dim_time_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "dim_date_id",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "type_of_behaviour",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "duration_behaviour",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "processing",
+			"table": "cow_behaviour"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

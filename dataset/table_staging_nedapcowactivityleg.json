@@ -1,0 +1,45 @@
+{
+	"name": "table_staging_nedapcowactivityleg",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWH_Hoeve_boveneind",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "staging"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [
+			{
+				"name": "animal_id",
+				"type": "bigint",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "quarter",
+				"type": "timestamp without time zone",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "total",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "status",
+				"type": "integer",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "staging",
+			"table": "nedapcowactivityleg"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

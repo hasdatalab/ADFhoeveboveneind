@@ -1,0 +1,19 @@
+{
+	"name": "API_GetCows",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Nedap_API",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Nedap API"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "https://api.nedap-bi.com/v1/animals/"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

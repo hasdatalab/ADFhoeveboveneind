@@ -1,0 +1,141 @@
+{
+	"name": "V2 DWH Lookup Leg Activity Flowlet",
+	"properties": {
+		"type": "Flowlet",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimTime"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimCow"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "CowLookup"
+				},
+				{
+					"name": "DateLookup"
+				},
+				{
+					"name": "TimeLookup"
+				},
+				{
+					"name": "SplitDateTime"
+				},
+				{
+					"name": "NullFilter"
+				},
+				{
+					"name": "StagingInput"
+				},
+				{
+					"name": "DWHOutput"
+				}
+			],
+			"scriptLines": [
+				"input(output(",
+				"          animal_id as long,",
+				"          quarter as timestamp,",
+				"          total_time_lying as integer,",
+				"          total_time_standing as integer,",
+				"          total_time_walking as integer,",
+				"          total_standups as integer,",
+				"          total_steps as integer",
+				"     ),",
+				"     order: 0) ~> StagingInput",
+				"source(output(",
+				"          dim_date_id as integer,",
+				"          date as date,",
+				"          day as integer,",
+				"          day_name as string,",
+				"          week as integer,",
+				"          iso_week as integer,",
+				"          day_of_week as integer,",
+				"          month as integer,",
+				"          month_name as string,",
+				"          quarter as integer,",
+				"          year as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_date',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+				"source(output(",
+				"          dim_time_id as integer,",
+				"          time as timestamp,",
+				"          minute as integer,",
+				"          hour as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_time',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+				"source(output(",
+				"          dim_cow_id as integer,",
+				"          lifenumber as string,",
+				"          leg_responder as long,",
+				"          neck_responder as long,",
+				"          cownumber as integer,",
+				"          nedap_id as long,",
+				"          start_date as date,",
+				"          end_date as date,",
+				"          group as integer,",
+				"          last_updated as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_cow',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
+				"StagingInput, DimCow lookup(animal_id == nedap_id,",
+				"     multiple: true,",
+				"     broadcast: 'right')~> CowLookup",
+				"SplitDateTime, DimDate lookup(DateCalc == toString(date),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> DateLookup",
+				"DateLookup, DimTime lookup(TimeCalc == trim(split(toString(time),' ')[2]),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> TimeLookup",
+				"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
+				"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
+				"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+				"NullFilter output(mapColumn(",
+				"          dim_cow_id,",
+				"          dim_date_id,",
+				"          dim_time_id,",
+				"          total_time_lying,",
+				"          total_time_standing,",
+				"          total_time_walking,",
+				"          total_standups,",
+				"          total_steps",
+				"     )) ~> DWHOutput"
+			]
+		}
+	}
+}

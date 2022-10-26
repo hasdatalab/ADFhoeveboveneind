@@ -1,0 +1,139 @@
+{
+	"name": "V2 DWH Lookup Behaviour Flowlet",
+	"properties": {
+		"type": "Flowlet",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimTime"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimCows"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "CowLookup",
+					"description": "Voegt data staging area samen met bron: DWHValidCows en filtert op koeien waarvan de animal_id gelijk is aan het nedapid.\n\n"
+				},
+				{
+					"name": "SplitDatetime"
+				},
+				{
+					"name": "TimeLookup"
+				},
+				{
+					"name": "DateLookup"
+				},
+				{
+					"name": "NullFilter"
+				},
+				{
+					"name": "CowBehaviourStaging",
+					"description": "Staging area data cow behaviour"
+				},
+				{
+					"name": "CowBehaviour"
+				}
+			],
+			"scriptLines": [
+				"input(output(",
+				"          animal_id as long,",
+				"          start_time as timestamp,",
+				"          type as integer,",
+				"          duration as integer,",
+				"          status as integer",
+				"     ),",
+				"     order: 0) ~> CowBehaviourStaging",
+				"source(output(",
+				"          dim_time_id as integer,",
+				"          time as timestamp,",
+				"          minute as integer,",
+				"          hour as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_time',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+				"source(output(",
+				"          dim_date_id as integer,",
+				"          date as date,",
+				"          day as integer,",
+				"          day_name as string,",
+				"          week as integer,",
+				"          iso_week as integer,",
+				"          day_of_week as integer,",
+				"          month as integer,",
+				"          month_name as string,",
+				"          quarter as integer,",
+				"          year as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_date',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+				"source(output(",
+				"          dim_cow_id as integer,",
+				"          lifenumber as string,",
+				"          leg_responder as long,",
+				"          neck_responder as long,",
+				"          cownumber as integer,",
+				"          nedap_id as long,",
+				"          start_date as date,",
+				"          end_date as date,",
+				"          group as integer,",
+				"          last_updated as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_cow',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
+				"CowBehaviourStaging, DimCows lookup(animal_id == nedap_id,",
+				"     multiple: true,",
+				"     broadcast: 'right',",
+				"     pickup: 'any')~> CowLookup",
+				"CowLookup derive({time calc} = trim(split(toString(start_time),' ')[2]),",
+				"          {date calc} = trim(split(toString(start_time),' ')[1])) ~> SplitDatetime",
+				"SplitDatetime, DimTime lookup({time calc} == trim(split(toString(time),' ')[2]),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> TimeLookup",
+				"TimeLookup, DimDate lookup({date calc} == toString(date),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> DateLookup",
+				"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+				"NullFilter output(mapColumn(",
+				"          dim_cow_id,",
+				"          dim_time_id,",
+				"          dim_date_id,",
+				"          type,",
+				"          duration",
+				"     )) ~> CowBehaviour"
+			]
+		}
+	}
+}

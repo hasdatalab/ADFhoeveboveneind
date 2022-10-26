@@ -1,0 +1,23 @@
+{
+	"name": "Nedap_API",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://api.nedap-bi.com/v1/",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous",
+			"authHeaders": {
+				"Authorization": {
+					"type": "AzureKeyVaultSecret",
+					"store": {
+						"referenceName": "boveneindkeyvaultt_access_token",
+						"type": "LinkedServiceReference"
+					},
+					"secretName": "access-token"
+				}
+			}
+		}
+	}
+}

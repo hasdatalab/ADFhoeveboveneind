@@ -1,0 +1,244 @@
+{
+	"name": "refresh_acces_token",
+	"properties": {
+		"activities": [
+			{
+				"name": "get_auth_code",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "get_refresh_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "get_client_id",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "get_client_secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://nedap-bi.com/oauth/token",
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@concat('client_id=',string(activity('get_client_id').output.value),'&client_secret=',string(activity('get_client_secret').output.value),'&grant_type=refresh_token','&refresh_token=',string(activity('get_refresh_token').output.value))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "get_refresh_token",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://boveneindkeyvault.vault.azure.net/secrets/refresh-token?api-version=7.3",
+					"method": "GET",
+					"turnOffAsync": false,
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "get_client_id",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://boveneindkeyvault.vault.azure.net/secrets/client-id?api-version=7.3 ",
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "get_client_secret",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://boveneindkeyvault.vault.azure.net/secrets/client-secret?api-version=7.3",
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "update_acces_token",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "set access token variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://boveneindkeyvault.vault.azure.net/secrets/access-token?api-version=7.3",
+					"method": "PUT",
+					"headers": {
+						"content-type": "application/json"
+					},
+					"body": {
+						"value": "@concat('{\"value\":', variables('push_access_token'),'}')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "update_refresh_token",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "set refresh token variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://boveneindkeyvault.vault.azure.net//secrets/refresh-token?api-version=7.3",
+					"method": "PUT",
+					"headers": {
+						"content-type": "application/json"
+					},
+					"body": {
+						"value": "@concat('{\"value\":', variables('push_refresh_token'),'}')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "set refresh token variable",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "get_auth_code",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "push_refresh_token",
+					"value": {
+						"value": "@concat('\"', string(activity('get_auth_code').output.refresh_token),'\"')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "set access token variable",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "get_auth_code",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "push_access_token",
+					"value": {
+						"value": "@concat('\"','bearer ', string(activity('get_auth_code').output.access_token),'\"')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"refresh_token": {
+				"type": "String"
+			},
+			"access_token": {
+				"type": "String"
+			},
+			"get_authcode": {
+				"type": "String"
+			},
+			"push_access_token": {
+				"type": "String"
+			},
+			"push_refresh_token": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-06-24T19:20:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,203 @@
+{
+	"name": "V2 DWH Lookup Milking Flowlet",
+	"properties": {
+		"type": "Flowlet",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimTime"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimMilkingCode"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimCow"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "CowLookup"
+				},
+				{
+					"name": "SplitDatetime"
+				},
+				{
+					"name": "TimeLookup"
+				},
+				{
+					"name": "DateLookup"
+				},
+				{
+					"name": "ErrorCodeLookup"
+				},
+				{
+					"name": "NullFilter"
+				},
+				{
+					"name": "Milkstaging"
+				},
+				{
+					"name": "CowMilkings"
+				}
+			],
+			"scriptLines": [
+				"input(output(",
+				"          koenummer as integer,",
+				"          lactatienummer as integer,",
+				"          {Kwartier geleidbaarheid ruwe waarde rechts achter} as integer,",
+				"          {Kwartier geleidbaarheid ruwe waarde links achter} as integer,",
+				"          {Kwartier geleidbaarheid ruwe waarde links voor} as integer,",
+				"          {Kwartier geleidbaarheid ruwe waarde rechts voor} as integer,",
+				"          {Robotbezoek datetime} as timestamp,",
+				"          lactatiedagen as integer,",
+				"          respondernummer as long,",
+				"          {Aantal beker aansluitpogingen rechts achter} as integer,",
+				"          {Aantal beker aansluitpogingen links achter} as integer,",
+				"          {Aantal beker aansluitpogingen links voor} as integer,",
+				"          {Aantal beker aansluitpogingen rechts voor} as integer,",
+				"          melkduur as integer,",
+				"          {Melkstroomherkenningstijd lv} as integer,",
+				"          {Melkstroomherkenningstijd rv} as integer,",
+				"          {Melkstroomherkenningstijd la} as integer,",
+				"          {Melkstroomherkenningstijd ra} as integer,",
+				"          melkhoeveelheid as float,",
+				"          {Error code} as integer,",
+				"          koeleeftijd as integer,",
+				"          {Roodheidsgraad achter rechts} as integer,",
+				"          {Roodheidsgraad achter links} as integer,",
+				"          {Roodheidsgraad vooraan links} as integer,",
+				"          {Roodheidsgraad vooraan rechts} as integer",
+				"     ),",
+				"     order: 0) ~> Milkstaging",
+				"source(output(",
+				"          dim_time_id as integer,",
+				"          time as timestamp,",
+				"          minute as integer,",
+				"          hour as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_time',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+				"source(output(",
+				"          dim_date_id as integer,",
+				"          date as date,",
+				"          day as integer,",
+				"          day_name as string,",
+				"          week as integer,",
+				"          iso_week as integer,",
+				"          day_of_week as integer,",
+				"          month as integer,",
+				"          month_name as string,",
+				"          quarter as integer,",
+				"          year as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_date',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+				"source(output(",
+				"          dim_error_code_id as integer,",
+				"          code as integer,",
+				"          description as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_milking_code',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimMilkingCode",
+				"source(output(",
+				"          dim_cow_id as integer,",
+				"          lifenumber as string,",
+				"          leg_responder as long,",
+				"          neck_responder as long,",
+				"          cownumber as integer,",
+				"          nedap_id as long,",
+				"          start_date as date,",
+				"          end_date as date,",
+				"          group as integer,",
+				"          last_updated as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_cow',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
+				"Milkstaging, DimCow lookup(koenummer == cownumber,",
+				"     multiple: true,",
+				"     broadcast: 'right',",
+				"     pickup: 'any')~> CowLookup",
+				"CowLookup derive({time calc} = trim(split(toString({Robotbezoek datetime}),' ')[2]),",
+				"          {date calc} = trim(split(toString({Robotbezoek datetime}),' ')[1])) ~> SplitDatetime",
+				"SplitDatetime, DimTime lookup({time calc} == trim(split(toString(time),' ')[2]),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> TimeLookup",
+				"TimeLookup, DimDate lookup({date calc} == toString(date),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> DateLookup",
+				"DateLookup, DimMilkingCode lookup({Error code} == code,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'right')~> ErrorCodeLookup",
+				"ErrorCodeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+				"NullFilter output(mapColumn(",
+				"          dim_cow_id,",
+				"          dim_error_code_id,",
+				"          dim_time_id,",
+				"          dim_date_id,",
+				"          quarterconductbr = {Kwartier geleidbaarheid ruwe waarde rechts achter},",
+				"          quarterconductbl = {Kwartier geleidbaarheid ruwe waarde links achter},",
+				"          quarterconductfl = {Kwartier geleidbaarheid ruwe waarde links voor},",
+				"          quarterconductfr = {Kwartier geleidbaarheid ruwe waarde rechts voor},",
+				"          degreeofrednessbr = {Roodheidsgraad achter rechts},",
+				"          degreeofrednessbl = {Roodheidsgraad achter links},",
+				"          degreeofrednessfl = {Roodheidsgraad vooraan links},",
+				"          degreeofrednessfr = {Roodheidsgraad vooraan rechts},",
+				"          nrconnectattemptbr = {Aantal beker aansluitpogingen rechts achter},",
+				"          nrconnectattemptbl = {Aantal beker aansluitpogingen links achter},",
+				"          nrconnectattemptfl = {Aantal beker aansluitpogingen links voor},",
+				"          nrconnectattemptfr = {Aantal beker aansluitpogingen rechts voor},",
+				"          milkingtimeudderbr = {Melkstroomherkenningstijd ra},",
+				"          milkingtimeudderbl = {Melkstroomherkenningstijd la},",
+				"          milkingtimeudderfl = {Melkstroomherkenningstijd lv},",
+				"          milkingtimeudderfr = {Melkstroomherkenningstijd rv},",
+				"          visitmilkamount = melkhoeveelheid,",
+				"          lactationdays = lactatiedagen,",
+				"          cowage = koeleeftijd,",
+				"          lactationnumer = lactatienummer,",
+				"          milkingtimetotal = melkduur",
+				"     )) ~> CowMilkings"
+			]
+		}
+	}
+}

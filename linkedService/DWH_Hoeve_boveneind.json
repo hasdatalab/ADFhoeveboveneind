@@ -1,0 +1,13 @@
+{
+	"name": "DWH_Hoeve_boveneind",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "Datawarehouse hoeve boveneind",
+		"annotations": [],
+		"type": "AzurePostgreSql",
+		"typeProperties": {
+			"connectionString": "host=dlwecmaindb.postgres.database.azure.com;port=5432;database=dwh_hoeve_boveneind;uid=adfadmin;encryptionmethod=1;validateservercertificate=0",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEEyNTU0NzRFLTY1NDYtNEYwMi1CNjcyLUUwNTYyQTQyNzhGQ18xZmJjMTQ5Mi0wMzQ2LTQ2YTAtOGMzNC03OGNhZGZkODZlZjIiDQp9"
+		}
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"name": "Hoeve Trigger",
+	"properties": {
+		"description": "Triggers the Hoeve Pipeline every 4 days.",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Hoeve Pipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 4,
+				"startTime": "2022-02-27T06:00:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}

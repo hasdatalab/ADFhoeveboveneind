@@ -1,0 +1,27 @@
+{
+	"name": "API_GetCowSteps",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Nedap_API",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"id": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Nedap API"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('https://api.nedap-bi.com/v1/behaviour/steps/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

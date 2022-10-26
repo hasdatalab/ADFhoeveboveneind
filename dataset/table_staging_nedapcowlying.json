@@ -1,0 +1,20 @@
+{
+	"name": "table_staging_nedapcowlying",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DWH_Hoeve_boveneind",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "staging"
+		},
+		"annotations": [],
+		"type": "AzurePostgreSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "staging",
+			"table": "nedapcowlying"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

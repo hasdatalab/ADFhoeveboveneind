@@ -1,0 +1,9 @@
+{
+	"name": "HoeveBoveneindADF",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c49ad4d0-c35a-4fd9-a5fe-cfd14840ca80",
+		"tenantId": "cc9f232a-9851-46b0-b23e-641d680590df"
+	}
+}

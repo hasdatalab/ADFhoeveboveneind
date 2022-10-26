@@ -1,0 +1,142 @@
+{
+	"name": "V2 DWH Lookup Eating Flowlet",
+	"properties": {
+		"description": "Copy of DWHLookupFlowlet ",
+		"type": "Flowlet",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimDate"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimTime"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH_Hoeve_boveneind",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimCows"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "CowLookup"
+				},
+				{
+					"name": "DateLookup"
+				},
+				{
+					"name": "TimeLookup"
+				},
+				{
+					"name": "SplitDateTime"
+				},
+				{
+					"name": "NullFilter"
+				},
+				{
+					"name": "DatatypeConversie"
+				},
+				{
+					"name": "CowEatingStaging"
+				},
+				{
+					"name": "CowEating"
+				}
+			],
+			"scriptLines": [
+				"input(output(",
+				"          animal_id as long,",
+				"          date as timestamp,",
+				"          total as integer,",
+				"          average as integer,",
+				"          attention as string",
+				"     ),",
+				"     order: 0) ~> CowEatingStaging",
+				"source(output(",
+				"          dim_date_id as integer,",
+				"          date as date,",
+				"          day as integer,",
+				"          day_name as string,",
+				"          week as integer,",
+				"          iso_week as integer,",
+				"          day_of_week as integer,",
+				"          month as integer,",
+				"          month_name as string,",
+				"          quarter as integer,",
+				"          year as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_date',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+				"source(output(",
+				"          dim_time_id as integer,",
+				"          time as timestamp,",
+				"          minute as integer,",
+				"          hour as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_time',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+				"source(output(",
+				"          dim_cow_id as integer,",
+				"          lifenumber as string,",
+				"          leg_responder as long,",
+				"          neck_responder as long,",
+				"          cownumber as integer,",
+				"          nedap_id as long,",
+				"          start_date as date,",
+				"          end_date as date,",
+				"          group as integer,",
+				"          last_updated as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     tableName: 'dim_cow',",
+				"     schemaName: 'warehouse',",
+				"     store: 'postgres',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
+				"CowEatingStaging, DimCows lookup(animal_id == nedap_id,",
+				"     multiple: true,",
+				"     broadcast: 'right')~> CowLookup",
+				"SplitDateTime, DimDate lookup(DateCalc == toString(DimDate@date),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> DateLookup",
+				"DateLookup, DimTime lookup(TimeCalc == trim(split(toString(time),' ')[2]),",
+				"     multiple: true,",
+				"     broadcast: 'right')~> TimeLookup",
+				"DatatypeConversie derive(DateCalc = trim(split(toString(date),' ')[1]),",
+				"          TimeCalc = trim(split(toString(date),' ')[2])) ~> SplitDateTime",
+				"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+				"CowLookup derive(attention = toBoolean(attention)) ~> DatatypeConversie",
+				"NullFilter output(mapColumn(",
+				"          total,",
+				"          average,",
+				"          attention,",
+				"          dim_cow_id,",
+				"          dim_date_id,",
+				"          dim_time_id",
+				"     )) ~> CowEating"
+			]
+		}
+	}
+}
