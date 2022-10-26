@@ -213,6 +213,18 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "start_date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "end_date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"userProperties": [],
@@ -309,7 +321,15 @@
 									"referenceName": "API_GetCowBehaviour",
 									"type": "DatasetReference",
 									"parameters": {
-										"id": "@item().id"
+										"id": "@item().id",
+										"start_date": {
+											"value": "@variables('start_date')",
+											"type": "Expression"
+										},
+										"end_date": {
+											"value": "@variables('end_date')",
+											"type": "Expression"
+										}
 									}
 								}
 							],
@@ -1039,8 +1059,42 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "start_date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "start_date",
+					"value": {
+						"value": "startOfDay(adddays(utcnow(),-4))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "end_date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "end_date",
+					"value": {
+						"value": "startOfDay(utcnow()))",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"variables": {
+			"start_date": {
+				"type": "String"
+			},
+			"end_date": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2022-10-20T14:58:40Z"
 	},
