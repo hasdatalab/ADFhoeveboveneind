@@ -1,0 +1,1530 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "HoeveBoveneindADF"
+		},
+		"Nedap_API_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.nedap-bi.com/v1/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_geamelkrobot')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "New_Postgre_SQL_DWH",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "koenummer",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lactatienummer",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde rechts achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde links achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde links voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Kwartier geleidbaarheid ruwe waarde rechts voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Robotbezoek datetime",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "lactatiedagen",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "respondernummer",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen rechts achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen links achter",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen links voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Aantal beker aansluitpogingen rechts voor",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "melkduur",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd lv",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd rv",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd la",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Melkstroomherkenningstijd ra",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "melkhoeveelheid",
+						"type": "real",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Error code",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "koeleeftijd",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad achter rechts",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad achter links",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad vooraan links",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "Roodheidsgraad vooraan rechts",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "geamelkrobot"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowactivityleg')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowactivityleg"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowactivityneck')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowactivityneck"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowbehaviour')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "start_time",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "type",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "duration",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowbehaviour"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcoweating')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "date",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarters",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "average",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "attention",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcoweating"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowid')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "condition",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "life_number",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder1",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder2",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder3",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "number",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "uuid",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "group_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowid"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowlying')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowlying"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowstanding')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowstanding"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowstandups')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowstandups"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowsteps')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowsteps"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapcowwalking')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapcowwalking"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedaplocationdata')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "New_Postgre_SQL_DWH",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "timestamp",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "x",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "y",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quality",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedaplocationdata"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/view_staging_CowIDView')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "CowIDView"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/view_staging_StagingCowView')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "condition",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "life_number",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder1",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder2",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "responder3",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "number",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "uuid",
+						"type": "character varying",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "group_id",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "StagingCowView"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Nedap_API')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('Nedap_API_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous",
+					"authHeaders": {
+						"Authorization": {
+							"type": "AzureKeyVaultSecret",
+							"store": {
+								"referenceName": "boveneindkeyvaultt_access_token",
+								"type": "LinkedServiceReference"
+							},
+							"secretName": "access-token"
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Behaviour Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimTime"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimDate"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimCows"
+						}
+					],
+					"sinks": [],
+					"transformations": [
+						{
+							"name": "CowLookup",
+							"description": "Voegt data staging area samen met bron: DWHValidCows en filtert op koeien waarvan de animal_id gelijk is aan het nedapid.\n\n"
+						},
+						{
+							"name": "SplitDatetime"
+						},
+						{
+							"name": "TimeLookup"
+						},
+						{
+							"name": "DateLookup"
+						},
+						{
+							"name": "NullFilter"
+						},
+						{
+							"name": "CowBehaviourStaging",
+							"description": "Staging area data cow behaviour"
+						},
+						{
+							"name": "CowBehaviour"
+						}
+					],
+					"scriptLines": [
+						"input(output(",
+						"          animal_id as long,",
+						"          start_time as timestamp,",
+						"          type as integer,",
+						"          duration as integer,",
+						"          status as integer",
+						"     ),",
+						"     order: 0) ~> CowBehaviourStaging",
+						"source(output(",
+						"          dim_time_id as integer,",
+						"          time as timestamp,",
+						"          minute as integer,",
+						"          hour as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_time',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+						"source(output(",
+						"          dim_date_id as integer,",
+						"          date as date,",
+						"          day as integer,",
+						"          day_name as string,",
+						"          week as integer,",
+						"          iso_week as integer,",
+						"          day_of_week as integer,",
+						"          month as integer,",
+						"          month_name as string,",
+						"          quarter as integer,",
+						"          year as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_date',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+						"source(output(",
+						"          dim_cow_id as integer,",
+						"          lifenumber as string,",
+						"          leg_responder as long,",
+						"          neck_responder as long,",
+						"          cownumber as integer,",
+						"          nedap_id as long,",
+						"          start_date as date,",
+						"          end_date as date,",
+						"          group as integer,",
+						"          last_updated as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_cow',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
+						"CowBehaviourStaging, DimCows lookup(animal_id == nedap_id,",
+						"     multiple: true,",
+						"     broadcast: 'right',",
+						"     pickup: 'any')~> CowLookup",
+						"CowLookup derive({time calc} = trim(split(toString(start_time),' ')[2]),",
+						"          {date calc} = trim(split(toString(start_time),' ')[1])) ~> SplitDatetime",
+						"SplitDatetime, DimTime lookup({time calc} == trim(split(toString(time),' ')[2]),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> TimeLookup",
+						"TimeLookup, DimDate lookup({date calc} == toString(date),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> DateLookup",
+						"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"NullFilter output(mapColumn(",
+						"          dim_cow_id,",
+						"          dim_time_id,",
+						"          dim_date_id,",
+						"          type,",
+						"          duration",
+						"     )) ~> CowBehaviour"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Eating Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Copy of DWHLookupFlowlet ",
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimDate"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimTime"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimCows"
+						}
+					],
+					"sinks": [],
+					"transformations": [
+						{
+							"name": "CowLookup"
+						},
+						{
+							"name": "DateLookup"
+						},
+						{
+							"name": "TimeLookup"
+						},
+						{
+							"name": "SplitDateTime"
+						},
+						{
+							"name": "NullFilter"
+						},
+						{
+							"name": "DatatypeConversie"
+						},
+						{
+							"name": "CowEatingStaging"
+						},
+						{
+							"name": "CowEating"
+						}
+					],
+					"scriptLines": [
+						"input(output(",
+						"          animal_id as long,",
+						"          date as timestamp,",
+						"          total as integer,",
+						"          average as integer,",
+						"          attention as string",
+						"     ),",
+						"     order: 0) ~> CowEatingStaging",
+						"source(output(",
+						"          dim_date_id as integer,",
+						"          date as date,",
+						"          day as integer,",
+						"          day_name as string,",
+						"          week as integer,",
+						"          iso_week as integer,",
+						"          day_of_week as integer,",
+						"          month as integer,",
+						"          month_name as string,",
+						"          quarter as integer,",
+						"          year as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_date',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+						"source(output(",
+						"          dim_time_id as integer,",
+						"          time as timestamp,",
+						"          minute as integer,",
+						"          hour as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_time',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+						"source(output(",
+						"          dim_cow_id as integer,",
+						"          lifenumber as string,",
+						"          leg_responder as long,",
+						"          neck_responder as long,",
+						"          cownumber as integer,",
+						"          nedap_id as long,",
+						"          start_date as date,",
+						"          end_date as date,",
+						"          group as integer,",
+						"          last_updated as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_cow',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
+						"CowEatingStaging, DimCows lookup(animal_id == nedap_id,",
+						"     multiple: true,",
+						"     broadcast: 'right')~> CowLookup",
+						"SplitDateTime, DimDate lookup(DateCalc == toString(DimDate@date),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> DateLookup",
+						"DateLookup, DimTime lookup(TimeCalc == trim(split(toString(time),' ')[2]),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> TimeLookup",
+						"DatatypeConversie derive(DateCalc = trim(split(toString(date),' ')[1]),",
+						"          TimeCalc = trim(split(toString(date),' ')[2])) ~> SplitDateTime",
+						"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"CowLookup derive(attention = toBoolean(attention)) ~> DatatypeConversie",
+						"NullFilter output(mapColumn(",
+						"          total,",
+						"          average,",
+						"          attention,",
+						"          dim_cow_id,",
+						"          dim_date_id,",
+						"          dim_time_id",
+						"     )) ~> CowEating"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Generic Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "New_Postgre_SQL_DWH",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DateDimDWH"
+						},
+						{
+							"linkedService": {
+								"referenceName": "New_Postgre_SQL_DWH",
+								"type": "LinkedServiceReference"
+							},
+							"name": "TimeDimDWH"
+						},
+						{
+							"linkedService": {
+								"referenceName": "New_Postgre_SQL_DWH",
+								"type": "LinkedServiceReference"
+							},
+							"name": "ValidCowsDWH"
+						}
+					],
+					"sinks": [],
+					"transformations": [
+						{
+							"name": "CowLookup"
+						},
+						{
+							"name": "DateLookup"
+						},
+						{
+							"name": "TimeLookup"
+						},
+						{
+							"name": "SplitDateTime"
+						},
+						{
+							"name": "NullFilter"
+						},
+						{
+							"name": "StagingInput"
+						},
+						{
+							"name": "DWHOutput"
+						}
+					],
+					"scriptLines": [
+						"input(output(",
+						"          animal_id as long,",
+						"          quarter as timestamp,",
+						"          total as integer",
+						"     ),",
+						"     order: 0) ~> StagingInput",
+						"source(output(",
+						"          DateID as integer,",
+						"          Date as date",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'DateView',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DateDimDWH",
+						"source(output(",
+						"          TimeID as integer,",
+						"          time as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'TimeView',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> TimeDimDWH",
+						"source(output(",
+						"          id as integer,",
+						"          nedapid as long,",
+						"          cownumber as integer,",
+						"          respondernumber1 as long,",
+						"          respondernumber2 as long",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'ValidCowsView',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> ValidCowsDWH",
+						"StagingInput, ValidCowsDWH lookup(animal_id == nedapid,",
+						"     multiple: true,",
+						"     broadcast: 'right')~> CowLookup",
+						"SplitDateTime, DateDimDWH lookup(DateCalc == toString(Date),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> DateLookup",
+						"DateLookup, TimeDimDWH lookup(TimeCalc == time,",
+						"     multiple: true,",
+						"     broadcast: 'right')~> TimeLookup",
+						"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
+						"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
+						"TimeLookup filter(isNull(id) == false() && isNull(DateID) == false() && isNull(TimeID) == false()) ~> NullFilter",
+						"NullFilter output(mapColumn(",
+						"          CowID = id,",
+						"          TimeID,",
+						"          DateID,",
+						"          total",
+						"     )) ~> DWHOutput"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Leg Activity Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimDate"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimTime"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimCow"
+						}
+					],
+					"sinks": [],
+					"transformations": [
+						{
+							"name": "CowLookup"
+						},
+						{
+							"name": "DateLookup"
+						},
+						{
+							"name": "TimeLookup"
+						},
+						{
+							"name": "SplitDateTime"
+						},
+						{
+							"name": "NullFilter"
+						},
+						{
+							"name": "StagingInput"
+						},
+						{
+							"name": "DWHOutput"
+						}
+					],
+					"scriptLines": [
+						"input(output(",
+						"          animal_id as long,",
+						"          quarter as timestamp,",
+						"          total_time_lying as integer,",
+						"          total_time_standing as integer,",
+						"          total_time_walking as integer,",
+						"          total_standups as integer,",
+						"          total_steps as integer",
+						"     ),",
+						"     order: 0) ~> StagingInput",
+						"source(output(",
+						"          dim_date_id as integer,",
+						"          date as date,",
+						"          day as integer,",
+						"          day_name as string,",
+						"          week as integer,",
+						"          iso_week as integer,",
+						"          day_of_week as integer,",
+						"          month as integer,",
+						"          month_name as string,",
+						"          quarter as integer,",
+						"          year as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_date',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+						"source(output(",
+						"          dim_time_id as integer,",
+						"          time as timestamp,",
+						"          minute as integer,",
+						"          hour as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_time',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimTime",
+						"source(output(",
+						"          dim_cow_id as integer,",
+						"          lifenumber as string,",
+						"          leg_responder as long,",
+						"          neck_responder as long,",
+						"          cownumber as integer,",
+						"          nedap_id as long,",
+						"          start_date as date,",
+						"          end_date as date,",
+						"          group as integer,",
+						"          last_updated as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_cow',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
+						"StagingInput, DimCow lookup(animal_id == nedap_id,",
+						"     multiple: true,",
+						"     broadcast: 'right')~> CowLookup",
+						"SplitDateTime, DimDate lookup(DateCalc == toString(date),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> DateLookup",
+						"DateLookup, DimTime lookup(TimeCalc == trim(split(toString(time),' ')[2]),",
+						"     multiple: true,",
+						"     broadcast: 'right')~> TimeLookup",
+						"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
+						"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
+						"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"NullFilter output(mapColumn(",
+						"          dim_cow_id,",
+						"          dim_date_id,",
+						"          dim_time_id,",
+						"          total_time_lying,",
+						"          total_time_standing,",
+						"          total_time_walking,",
+						"          total_standups,",
+						"          total_steps",
+						"     )) ~> DWHOutput"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Location Flowlet')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Flowlet",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimDate"
+						},
+						{
+							"linkedService": {
+								"referenceName": "DWH_Hoeve_boveneind",
+								"type": "LinkedServiceReference"
+							},
+							"name": "DimCow"
+						}
+					],
+					"sinks": [],
+					"transformations": [
+						{
+							"name": "CowLookup"
+						},
+						{
+							"name": "SplitDatetime"
+						},
+						{
+							"name": "DateLookup"
+						},
+						{
+							"name": "Nullfilter"
+						},
+						{
+							"name": "LocationStaging"
+						},
+						{
+							"name": "CowLocation"
+						}
+					],
+					"scriptLines": [
+						"input(output(",
+						"          timestamp as timestamp,",
+						"          responder as long,",
+						"          x as long,",
+						"          y as long,",
+						"          quality as long",
+						"     ),",
+						"     order: 0) ~> LocationStaging",
+						"source(output(",
+						"          dim_date_id as integer,",
+						"          date as date,",
+						"          day as integer,",
+						"          day_name as string,",
+						"          week as integer,",
+						"          iso_week as integer,",
+						"          day_of_week as integer,",
+						"          month as integer,",
+						"          month_name as string,",
+						"          quarter as integer,",
+						"          year as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_date',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimDate",
+						"source(output(",
+						"          dim_cow_id as integer,",
+						"          lifenumber as string,",
+						"          leg_responder as long,",
+						"          neck_responder as long,",
+						"          cownumber as integer,",
+						"          start_date as date,",
+						"          end_date as date,",
+						"          GROUP as integer,",
+						"          last_updated as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     tableName: 'dim_cow',",
+						"     schemaName: 'warehouse',",
+						"     store: 'postgres',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
+						"LocationStaging, DimCow lookup(responder == neck_responder,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> CowLookup",
+						"CowLookup derive({date calc} = trim(split(toString(timestamp),' ')[1])) ~> SplitDatetime",
+						"SplitDatetime, DimDate lookup({date calc} == toString(date),",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> DateLookup",
+						"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false()) ~> Nullfilter",
+						"Nullfilter output(mapColumn(",
+						"          each(match(true()))",
+						"     )) ~> CowLocation"
+					]
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

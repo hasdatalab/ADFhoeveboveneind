@@ -1,0 +1,117 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "HoeveBoveneindADF"
+		},
+		"DWH_Hoeve_boveneind_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'DWH_Hoeve_boveneind'"
+		},
+		"New_Postgre_SQL_DWH_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'New_Postgre_SQL_DWH'"
+		},
+		"errorlogblob_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'errorlogblob'"
+		},
+		"Nedap_API_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://api.nedap-bi.com/v1/"
+		},
+		"boveneindkeyvaultt_access_token_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://boveneindkeyvault.vault.azure.net/"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "HoeveBoveneindADF_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"DWH_Hoeve_boveneind_connectionString": {
+						"value": "[parameters('DWH_Hoeve_boveneind_connectionString')]"
+					},
+					"New_Postgre_SQL_DWH_connectionString": {
+						"value": "[parameters('New_Postgre_SQL_DWH_connectionString')]"
+					},
+					"errorlogblob_connectionString": {
+						"value": "[parameters('errorlogblob_connectionString')]"
+					},
+					"boveneindkeyvaultt_access_token_properties_typeProperties_baseUrl": {
+						"value": "[parameters('boveneindkeyvaultt_access_token_properties_typeProperties_baseUrl')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "HoeveBoveneindADF_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"Nedap_API_properties_typeProperties_url": {
+						"value": "[parameters('Nedap_API_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'HoeveBoveneindADF_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "HoeveBoveneindADF_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'HoeveBoveneindADF_ArmTemplate_1')]"
+			]
+		}
+	]
+}

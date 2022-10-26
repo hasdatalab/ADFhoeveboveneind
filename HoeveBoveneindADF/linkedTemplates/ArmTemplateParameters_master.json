@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "HoeveBoveneindADF"
+		},
+		"DWH_Hoeve_boveneind_connectionString": {
+			"value": ""
+		},
+		"New_Postgre_SQL_DWH_connectionString": {
+			"value": ""
+		},
+		"errorlogblob_connectionString": {
+			"value": ""
+		},
+		"Nedap_API_properties_typeProperties_url": {
+			"value": "https://api.nedap-bi.com/v1/"
+		},
+		"boveneindkeyvaultt_access_token_properties_typeProperties_baseUrl": {
+			"value": "https://boveneindkeyvault.vault.azure.net/"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
