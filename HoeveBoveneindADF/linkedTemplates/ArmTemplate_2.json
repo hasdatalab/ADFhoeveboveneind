@@ -401,6 +401,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -410,7 +416,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/day_summaries?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/day_summaries?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -430,6 +436,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -439,7 +451,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/leg_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/leg_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -459,6 +471,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -468,7 +486,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/lying/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/lying/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -488,6 +506,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -497,7 +521,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/neck_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/neck_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -517,6 +541,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -526,7 +556,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/standing/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/standing/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -546,6 +576,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -555,7 +591,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/standups/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/standups/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -575,6 +611,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -584,7 +626,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/steps/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/steps/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -604,6 +646,12 @@
 				"parameters": {
 					"id": {
 						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
 					}
 				},
 				"folder": {
@@ -613,7 +661,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/walking/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(adddays(utcnow(),-4)),'&end_date=',startOfDay(utcnow()))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/walking/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
@@ -1371,7 +1419,15 @@
 											"referenceName": "API_GetCowLying",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
@@ -1461,7 +1517,15 @@
 											"referenceName": "API_GetCowStanding",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
@@ -1551,7 +1615,15 @@
 											"referenceName": "API_GetCowStandups",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
@@ -1641,7 +1713,15 @@
 											"referenceName": "API_GetCowWalking",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
@@ -1731,7 +1811,15 @@
 											"referenceName": "API_GetCowNeckActivity",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
@@ -1821,7 +1909,15 @@
 											"referenceName": "API_GetCowLegActivity",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
@@ -1929,7 +2025,15 @@
 											"referenceName": "API_GetCowEating",
 											"type": "DatasetReference",
 											"parameters": {
-												"id": "@item().id"
+												"id": "@item().id",
+												"start_date": {
+													"value": "@variables('start_date')",
+													"type": "Expression"
+												},
+												"end_date": {
+													"value": "@variables('end_date')",
+													"type": "Expression"
+												}
 											}
 										}
 									],
