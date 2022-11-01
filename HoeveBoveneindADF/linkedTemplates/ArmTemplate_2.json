@@ -2155,7 +2155,7 @@
 						"typeProperties": {
 							"variableName": "start_date",
 							"value": {
-								"value": "@addDays(utcnow(), -4)",
+								"value": "@addDays(startOfDay(utcnow()), -4)",
 								"type": "Expression"
 							}
 						}
@@ -2168,7 +2168,7 @@
 						"typeProperties": {
 							"variableName": "end_date",
 							"value": {
-								"value": "@utcnow()",
+								"value": "@addDays(startOfDay(utcnow()), 0)",
 								"type": "Expression"
 							}
 						}
@@ -2225,8 +2225,9 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 4,
-						"startTime": "2022-02-27T06:00:00Z",
-						"timeZone": "UTC"
+						"startTime": "2022-02-27T08:00:00",
+						"timeZone": "W. Europe Standard Time",
+						"schedule": {}
 					}
 				}
 			},
