@@ -2172,6 +2172,1218 @@
 								"type": "Expression"
 							}
 						}
+					},
+					{
+						"name": "Copy cow Behaviour",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Truncate Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "type_of_behaviour",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "type_of_behaviour",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "duration_behaviour",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "duration_behaviour",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "table_processing_cow_behaviour",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_DWH_cow_behaviour",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy cow eating",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Truncate Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_eating_time",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_eating_time",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "average_eating_time",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "average_eating_time",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "attention_needed",
+											"type": "Boolean",
+											"physicalType": "boolean"
+										},
+										"sink": {
+											"name": "attention_needed",
+											"type": "Boolean",
+											"physicalType": "boolean"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "table_processing_cow_eating",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_DWH_cow_eating",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy cow location",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Truncate Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "time",
+											"type": "TimeSpan",
+											"physicalType": "time without time zone"
+										},
+										"sink": {
+											"name": "time",
+											"type": "TimeSpan",
+											"physicalType": "time without time zone"
+										}
+									},
+									{
+										"source": {
+											"name": "x_coordinate",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "x_coordinate",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "y_coordinate",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "y_coordinate",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "quality_position",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "quality_position",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "table_processing_cow_location",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_DWH_cow_location",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy cow milkings",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Truncate Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_error_code_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_error_code_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "quarterconductbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "quarterconductbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "quarterconductbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "quarterconductbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "quarterconductfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "quarterconductfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "quarterconductfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "quarterconductfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "degreeofrednessbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "degreeofrednessbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "degreeofrednessbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "degreeofrednessbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "degreeofrednessfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "degreeofrednessfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "degreeofrednessfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "degreeofrednessfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "nrconnectattemptbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "nrconnectattemptbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "nrconnectattemeptbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "nrconnectattemeptbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "nrconnectattemeptfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "nrconnectattemeptfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "nrconnectattemptfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "nrconnectattemptfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "milkingtimeudderbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "milkingtimeudderbr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "milkingtimeudderbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "milkingtimeudderbl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "milkingtimeudderfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "milkingtimeudderfl",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "milkingtimeudderfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "milkingtimeudderfr",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "visitmilkamount",
+											"type": "Double",
+											"physicalType": "double precision"
+										},
+										"sink": {
+											"name": "visitmilkamount",
+											"type": "Double",
+											"physicalType": "double precision"
+										}
+									},
+									{
+										"source": {
+											"name": "lactationdays",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "lactationdays",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "cowage",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "cowage",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "lactationnumer",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "lactationnumer",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "milkingtimetotal",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "milkingtimetotal",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "table_processing_cow_milkings",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_DWH_cow_milkings",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy leg activity",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Truncate Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_time_lying",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_time_lying",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_time_standing",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_time_standing",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_time_walking",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_time_walking",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_standups",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_standups",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_steps",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_steps",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "table_processing_leg_activity",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_DWH_leg_activity",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy neck activity",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Truncate Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_cow_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_time_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "dim_date_id",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_neck_movements",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_neck_movements",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_time_eating",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_time_eating",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									},
+									{
+										"source": {
+											"name": "total_time_ruminating",
+											"type": "Int32",
+											"physicalType": "integer"
+										},
+										"sink": {
+											"name": "total_time_ruminating",
+											"type": "Int32",
+											"physicalType": "integer"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "table_processing_neck_activity",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_DWH_neck_activity",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "truncate cow_milkings",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy cow milkings",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate processing.cow_milkings;\n\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_processing_cow_milkings",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "truncate cow_eating",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy cow eating",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate processing.cow_eating;\n\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_processing_cow_eating",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Truncate Staging_copy1_copy1_copy1",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy cow location",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate processing.cow_location;\n\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_processing_cow_location",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "truncate cow_leg_activity",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy leg activity",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate processing.cow_leg_activity;\n\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_processing_leg_activity",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "truncate cow_neck_activity",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy neck activity",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate processing.cow_neck_activity;\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_processing_neck_activity",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "truncate cow_behaviour",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "Copy cow Behaviour",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate processing.cow_behaviour;\n\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_processing_cow_behaviour",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
 					}
 				],
 				"policy": {
@@ -2226,8 +3438,7 @@
 						"frequency": "Day",
 						"interval": 4,
 						"startTime": "2022-02-27T08:00:00",
-						"timeZone": "W. Europe Standard Time",
-						"schedule": {}
+						"timeZone": "W. Europe Standard Time"
 					}
 				}
 			},
