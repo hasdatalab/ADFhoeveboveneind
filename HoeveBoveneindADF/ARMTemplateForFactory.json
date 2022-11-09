@@ -913,7 +913,7 @@
 											"mappings": [
 												{
 													"source": {
-														"path": "$['leg_activity_quarters'][0]['animal_id']"
+														"path": "animal_id"
 													},
 													"sink": {
 														"name": "animal_id",
@@ -922,7 +922,7 @@
 												},
 												{
 													"source": {
-														"path": "$['leg_activity_quarters'][0]['quarter']"
+														"path": "quarter"
 													},
 													"sink": {
 														"name": "quarter",
@@ -931,7 +931,7 @@
 												},
 												{
 													"source": {
-														"path": "$['leg_activity_quarters'][0]['total']"
+														"path": "total"
 													},
 													"sink": {
 														"name": "total",
@@ -2295,7 +2295,7 @@
 						}
 					},
 					{
-						"name": "Truncate Staging_copy1_copy1_copy1",
+						"name": "Truncate cow_location",
 						"description": "Empties staging tables ",
 						"type": "Lookup",
 						"dependsOn": [
