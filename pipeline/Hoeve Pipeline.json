@@ -899,7 +899,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "API_GetCowLegActivity",
+									"referenceName": "API_GetCowSteps",
 									"type": "DatasetReference",
 									"parameters": {
 										"id": "@item().id",
