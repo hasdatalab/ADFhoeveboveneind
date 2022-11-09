@@ -899,18 +899,12 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "API_GetCowLegActivity",
+									"referenceName": "API_GetCowSteps",
 									"type": "DatasetReference",
 									"parameters": {
 										"id": "@item().id",
-										"start_date": {
-											"value": "@variables('start_date')",
-											"type": "Expression"
-										},
-										"end_date": {
-											"value": "@variables('end_date')",
-											"type": "Expression"
-										}
+										"start_date": "@variables('start_date')",
+										"end_date": "@variables('end_date')"
 									}
 								}
 							],
