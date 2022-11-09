@@ -1906,7 +1906,7 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "API_GetCowLegActivity",
+											"referenceName": "API_GetCowSteps",
 											"type": "DatasetReference",
 											"parameters": {
 												"id": "@item().id",
@@ -3405,7 +3405,7 @@
 				"[concat(variables('factoryId'), '/datasets/API_GetCowStandups')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowWalking')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowNeckActivity')]",
-				"[concat(variables('factoryId'), '/datasets/API_GetCowLegActivity')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowSteps')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowEating')]"
 			]
 		},

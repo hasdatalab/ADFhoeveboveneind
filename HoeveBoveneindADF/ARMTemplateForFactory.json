@@ -953,7 +953,7 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "API_GetCowLegActivity",
+											"referenceName": "API_GetCowSteps",
 											"type": "DatasetReference",
 											"parameters": {
 												"id": "@item().id",
@@ -2473,7 +2473,7 @@
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowwalking')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowNeckActivity')]",
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowactivityneck')]",
-				"[concat(variables('factoryId'), '/datasets/API_GetCowLegActivity')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCowSteps')]",
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowsteps')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowEating')]",
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcoweating')]"
