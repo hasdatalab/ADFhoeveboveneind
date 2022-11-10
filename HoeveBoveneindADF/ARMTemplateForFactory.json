@@ -1178,8 +1178,7 @@
 									"MilkingDWH": {},
 									"LocationDWH": {},
 									"LegActivityDWH": {}
-								},
-								"linkedServiceParameters": {}
+								}
 							},
 							"staging": {},
 							"compute": {
@@ -1214,32 +1213,6 @@
 								"type": "Expression"
 							}
 						}
-					},
-					{
-						"name": "truncate cow_neck_activity",
-						"description": "Empties staging tables ",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzurePostgreSqlSource",
-								"query": "truncate processing.cow_neck_activity;\nselect 0 id;",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "table_processing_neck_activity",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
 					}
 				],
 				"policy": {
@@ -1265,7 +1238,6 @@
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowactivityneck')]",
 				"[concat(variables('factoryId'), '/pipelines/refresh_acces_token')]",
 				"[concat(variables('factoryId'), '/dataflows/V2 Update Facts Dataflow')]",
-				"[concat(variables('factoryId'), '/datasets/table_processing_neck_activity')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowBehaviour')]",
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowbehaviour')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowLying')]",
