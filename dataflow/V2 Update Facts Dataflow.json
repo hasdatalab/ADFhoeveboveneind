@@ -79,7 +79,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "table_processing_neck_activity",
+						"referenceName": "table_DWH_neck_activity",
 						"type": "DatasetReference"
 					},
 					"name": "NeckActivityDWH",
@@ -90,7 +90,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "table_processing_cow_eating",
+						"referenceName": "table_DWH_cow_eating",
 						"type": "DatasetReference"
 					},
 					"name": "EatingDWH",
@@ -112,7 +112,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "table_processing_cow_milkings",
+						"referenceName": "table_DWH_cow_milkings",
 						"type": "DatasetReference"
 					},
 					"name": "MilkingDWH",
@@ -123,7 +123,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "table_processing_cow_location",
+						"referenceName": "table_DWH_cow_location",
 						"type": "DatasetReference"
 					},
 					"name": "LocationDWH",
@@ -134,7 +134,7 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "table_processing_leg_activity",
+						"referenceName": "table_DWH_leg_activity",
 						"type": "DatasetReference"
 					},
 					"name": "LegActivityDWH"
