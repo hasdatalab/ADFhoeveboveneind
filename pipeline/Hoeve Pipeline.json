@@ -959,11 +959,10 @@
 										},
 										{
 											"source": {
-												"path": "['date']"
+												"path": "['quarter']"
 											},
 											"sink": {
-												"name": "date",
-												"type": "DateTime"
+												"name": "date"
 											}
 										},
 										{
