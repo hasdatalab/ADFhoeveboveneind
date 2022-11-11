@@ -950,7 +950,7 @@
 									"mappings": [
 										{
 											"source": {
-												"path": "['animal_id']"
+												"path": "$['eating_summaries'][0]['animal_id']"
 											},
 											"sink": {
 												"name": "animal_id",
@@ -959,7 +959,7 @@
 										},
 										{
 											"source": {
-												"path": "['date']"
+												"path": "$['eating_summaries'][0]['date']"
 											},
 											"sink": {
 												"name": "date",
@@ -968,7 +968,7 @@
 										},
 										{
 											"source": {
-												"path": "['total']"
+												"path": "$['eating_summaries'][0]['total']"
 											},
 											"sink": {
 												"name": "total",
@@ -977,7 +977,7 @@
 										},
 										{
 											"source": {
-												"path": "['average']"
+												"path": "$['eating_summaries'][0]['average']"
 											},
 											"sink": {
 												"name": "average",
@@ -986,11 +986,20 @@
 										},
 										{
 											"source": {
-												"path": "['attention']"
+												"path": "$['eating_summaries'][0]['attention']"
 											},
 											"sink": {
 												"name": "attention",
 												"type": "String"
+											}
+										},
+										{
+											"source": {
+												"path": "$['status']"
+											},
+											"sink": {
+												"name": "status",
+												"type": "Int32"
 											}
 										}
 									],
