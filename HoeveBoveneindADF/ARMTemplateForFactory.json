@@ -1196,7 +1196,7 @@
 						"typeProperties": {
 							"variableName": "start_date",
 							"value": {
-								"value": "@addDays(startOfDay(utcnow()), -4)",
+								"value": "@addDays(startOfDay(utcnow()), -1)",
 								"type": "Expression"
 							}
 						}
@@ -1572,7 +1572,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/day_summaries?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
