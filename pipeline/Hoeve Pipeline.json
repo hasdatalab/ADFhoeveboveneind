@@ -976,15 +976,6 @@
 										},
 										{
 											"source": {
-												"path": "['average']"
-											},
-											"sink": {
-												"name": "average",
-												"type": "Int32"
-											}
-										},
-										{
-											"source": {
 												"path": "['attention']"
 											},
 											"sink": {
