@@ -962,7 +962,8 @@
 												"path": "['quarter']"
 											},
 											"sink": {
-												"name": "date"
+												"name": "date",
+												"type": "DateTime"
 											}
 										},
 										{
@@ -971,24 +972,6 @@
 											},
 											"sink": {
 												"name": "total",
-												"type": "Int32"
-											}
-										},
-										{
-											"source": {
-												"path": "['attention']"
-											},
-											"sink": {
-												"name": "attention",
-												"type": "String"
-											}
-										},
-										{
-											"source": {
-												"path": "$['status']"
-											},
-											"sink": {
-												"name": "status",
 												"type": "Int32"
 											}
 										}
