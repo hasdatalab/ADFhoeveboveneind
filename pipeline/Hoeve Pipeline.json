@@ -959,7 +959,7 @@
 										},
 										{
 											"source": {
-												"path": "['quarter']"
+												"path": "['date']"
 											},
 											"sink": {
 												"name": "date",
@@ -974,9 +974,27 @@
 												"name": "total",
 												"type": "Int32"
 											}
+										},
+										{
+											"source": {
+												"path": "['average']"
+											},
+											"sink": {
+												"name": "average",
+												"type": "Int32"
+											}
+										},
+										{
+											"source": {
+												"path": "['attention']"
+											},
+											"sink": {
+												"name": "attention",
+												"type": "String"
+											}
 										}
 									],
-									"collectionReference": "$['eating_quarters']"
+									"collectionReference": "$['day_summaries']"
 								}
 							},
 							"inputs": [
