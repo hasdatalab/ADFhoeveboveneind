@@ -1056,7 +1056,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzurePostgreSqlSource",
-						"query": "truncate staging.nedapcowid;\ntruncate staging.nedapcowactivityneck;\ntruncate staging.nedapcowactivityleg;\ntruncate staging.nedapcowbehaviour;\ntruncate staging.nedapcoweating;\ntruncate staging.nedapcowlying;\ntruncate staging.nedapcowstanding;\ntruncate staging.nedapcowstandups;\ntruncate staging.nedapcowsteps;\ntruncate staging.nedapcowwalking;\n-- truncate staging.nedaplocationdata;\n-- truncate staging.geamelkrobot;\n\nselect 0 id;",
+						"query": "--truncate staging.nedapcowid;\n--truncate staging.nedapcowactivityneck;\n--truncate staging.nedapcowactivityleg;\n--truncate staging.nedapcowbehaviour;\n--truncate staging.nedapcoweating;\n--truncate staging.nedapcowlying;\n--truncate staging.nedapcowstanding;\n--truncate staging.nedapcowstandups;\n--truncate staging.nedapcowsteps;\n--truncate staging.nedapcowwalking;\n-- truncate staging.nedaplocationdata;\n-- truncate staging.geamelkrobot;\n\nselect 0 id;",
 						"partitionOption": "None"
 					},
 					"dataset": {
@@ -1118,7 +1118,7 @@
 				"typeProperties": {
 					"variableName": "start_date",
 					"value": {
-						"value": "@addDays(startOfDay(utcnow()), -1)",
+						"value": "@addDays(startOfDay(utcnow()), -2)",
 						"type": "Expression"
 					}
 				}
