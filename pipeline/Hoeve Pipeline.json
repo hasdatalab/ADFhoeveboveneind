@@ -950,7 +950,7 @@
 									"mappings": [
 										{
 											"source": {
-												"path": "['animal_id']"
+												"path": "$['eating_summaries'][0]['animal_id']"
 											},
 											"sink": {
 												"name": "animal_id",
@@ -959,7 +959,7 @@
 										},
 										{
 											"source": {
-												"path": "['quarter']"
+												"path": "$['eating_summaries'][0]['quarter']"
 											},
 											"sink": {
 												"name": "date"
@@ -967,7 +967,7 @@
 										},
 										{
 											"source": {
-												"path": "['total']"
+												"path": "$['eating_summaries'][0]['total']"
 											},
 											"sink": {
 												"name": "total",
@@ -976,7 +976,7 @@
 										},
 										{
 											"source": {
-												"path": "['average']"
+												"path": "$['eating_summaries'][0]['average']"
 											},
 											"sink": {
 												"name": "average",
@@ -985,7 +985,7 @@
 										},
 										{
 											"source": {
-												"path": "['attention']"
+												"path": "$['eating_summaries'][0]['attention']"
 											},
 											"sink": {
 												"name": "attention",
@@ -1002,7 +1002,7 @@
 											}
 										}
 									],
-									"collectionReference": "$['eating_summaries']"
+									"collectionReference": "$['eating_quarter']"
 								}
 							},
 							"inputs": [
