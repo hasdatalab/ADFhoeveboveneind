@@ -1005,7 +1005,7 @@
 											"mappings": [
 												{
 													"source": {
-														"path": "[['animal_id']"
+														"path": "$['eating_summaries'][0]['animal_id']"
 													},
 													"sink": {
 														"name": "animal_id",
@@ -1014,7 +1014,7 @@
 												},
 												{
 													"source": {
-														"path": "[['date']"
+														"path": "$['eating_summaries'][0]['date']"
 													},
 													"sink": {
 														"name": "date",
@@ -1023,7 +1023,7 @@
 												},
 												{
 													"source": {
-														"path": "[['total']"
+														"path": "$['eating_summaries'][0]['total']"
 													},
 													"sink": {
 														"name": "total",
@@ -1032,7 +1032,7 @@
 												},
 												{
 													"source": {
-														"path": "[['average']"
+														"path": "$['eating_summaries'][0]['average']"
 													},
 													"sink": {
 														"name": "average",
@@ -1041,7 +1041,7 @@
 												},
 												{
 													"source": {
-														"path": "[['attention']"
+														"path": "$['eating_summaries'][0]['attention']"
 													},
 													"sink": {
 														"name": "attention",
@@ -1058,7 +1058,7 @@
 													}
 												}
 											],
-											"collectionReference": "$['eating_summaries']"
+											"collectionReference": "$['day_summaries']"
 										}
 									},
 									"inputs": [
@@ -1196,7 +1196,7 @@
 						"typeProperties": {
 							"variableName": "start_date",
 							"value": {
-								"value": "@addDays(startOfDay(utcnow()), -1)",
+								"value": "@addDays(startOfDay(utcnow()), -4)",
 								"type": "Expression"
 							}
 						}
@@ -1572,7 +1572,7 @@
 				"type": "RestResource",
 				"typeProperties": {
 					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/eating/animal/day_summaries?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
