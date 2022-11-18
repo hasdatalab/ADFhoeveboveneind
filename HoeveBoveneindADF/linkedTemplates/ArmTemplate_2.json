@@ -2219,8 +2219,9 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 4,
-						"startTime": "2022-02-27T08:00:00",
-						"timeZone": "W. Europe Standard Time"
+						"startTime": "2022-02-27T06:00:00",
+						"timeZone": "W. Europe Standard Time",
+						"schedule": {}
 					}
 				}
 			},

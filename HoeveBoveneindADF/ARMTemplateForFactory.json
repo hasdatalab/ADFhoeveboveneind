@@ -3069,7 +3069,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "New_Postgre_SQL_DWH",
+					"referenceName": "DWH_Hoeve_boveneind",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -3235,7 +3235,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/New_Postgre_SQL_DWH')]"
+				"[concat(variables('factoryId'), '/linkedServices/DWH_Hoeve_boveneind')]"
 			]
 		},
 		{
@@ -3757,7 +3757,7 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "New_Postgre_SQL_DWH",
+					"referenceName": "DWH_Hoeve_boveneind",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
@@ -3803,7 +3803,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/New_Postgre_SQL_DWH')]"
+				"[concat(variables('factoryId'), '/linkedServices/DWH_Hoeve_boveneind')]"
 			]
 		},
 		{
@@ -4019,8 +4019,9 @@
 					"recurrence": {
 						"frequency": "Day",
 						"interval": 4,
-						"startTime": "2022-02-27T08:00:00",
-						"timeZone": "W. Europe Standard Time"
+						"startTime": "2022-02-27T06:00:00",
+						"timeZone": "W. Europe Standard Time",
+						"schedule": {}
 					}
 				}
 			},
