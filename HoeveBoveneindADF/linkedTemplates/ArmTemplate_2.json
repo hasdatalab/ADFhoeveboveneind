@@ -1580,7 +1580,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzurePostgreSqlSource",
-								"query": "truncate staging.nedapcowid;\ntruncate staging.nedapcowactivityneck;\ntruncate staging.nedapcowactivityleg;\ntruncate staging.nedapcowbehaviour;\ntruncate staging.nedapcoweating;\ntruncate staging.nedapcowlying;\ntruncate staging.nedapcowstanding;\ntruncate staging.nedapcowstandups;\ntruncate staging.nedapcowsteps;\ntruncate staging.nedapcowwalking;\n-- truncate staging.nedaplocationdata;\n-- truncate staging.geamelkrobot;\n\nselect 0 id;",
+								"query": "truncate staging.nedapcowid;\ntruncate staging.nedapcowactivityneck;\ntruncate staging.nedapcowactivityleg;\ntruncate staging.nedapcowbehaviour;\ntruncate staging.nedapcoweating;\ntruncate staging.nedapcowlying;\ntruncate staging.nedapcowstanding;\ntruncate staging.nedapcowstandups;\ntruncate staging.nedapcowsteps;\ntruncate staging.nedapcowwalking;\ntruncate staging.nedaplocationdata;\ntruncate staging.geamelkrobot;\n\nselect 0 id;",
 								"partitionOption": "None"
 							},
 							"dataset": {
