@@ -65,8 +65,8 @@
 					"isSequential": true,
 					"activities": [
 						{
-							"name": "Eating per cow",
-							"description": "truncate staging.\"nedapcoweating\"",
+							"name": "Heat_detection",
+							"description": "",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -99,7 +99,7 @@
 									"mappings": [
 										{
 											"source": {
-												"path": "$['eating_summaries'][0]['animal_id']"
+												"path": "$['activity_data'][0]['animal_id']"
 											},
 											"sink": {
 												"name": "animal_id",
@@ -108,38 +108,32 @@
 										},
 										{
 											"source": {
-												"path": "$['eating_summaries'][0]['date']"
-											},
-											"sink": {
-												"name": "date",
-												"type": "DateTime"
+												"path": "$['activity_data'][0]['start_date']"
 											}
 										},
 										{
 											"source": {
-												"path": "$['eating_summaries'][0]['total']"
-											},
-											"sink": {
-												"name": "total",
-												"type": "Int32"
+												"path": "$['activity_data'][0]['end_date']"
 											}
 										},
 										{
 											"source": {
-												"path": "$['eating_summaries'][0]['average']"
-											},
-											"sink": {
-												"name": "average",
-												"type": "Int32"
+												"path": "$['activity_data'][0]['x_factor']"
 											}
 										},
 										{
 											"source": {
-												"path": "$['eating_summaries'][0]['attention']"
-											},
-											"sink": {
-												"name": "attention",
-												"type": "String"
+												"path": "$['activity_data'][0]['attentions']['increased']"
+											}
+										},
+										{
+											"source": {
+												"path": "$['activity_data'][0]['attentions']['suspicious']"
+											}
+										},
+										{
+											"source": {
+												"path": "$['activity_data'][0]['label_type']"
 											}
 										},
 										{
@@ -157,18 +151,12 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "API_GetCowEating",
+									"referenceName": "API_GetHeatData",
 									"type": "DatasetReference",
 									"parameters": {
 										"id": "@item().id",
-										"start_date": {
-											"value": "@variables('start_date')",
-											"type": "Expression"
-										},
-										"end_date": {
-											"value": "@variables('end_date')",
-											"type": "Expression"
-										}
+										"start_date": "@variables('start_date')",
+										"end_date": "@variables('end_date')"
 									}
 								}
 							],
