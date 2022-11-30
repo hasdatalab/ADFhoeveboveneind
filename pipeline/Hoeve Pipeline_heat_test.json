@@ -162,7 +162,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "table_staging_geamelkrobot",
+									"referenceName": "table_staging_nedapheatdetection",
 									"type": "DatasetReference"
 								}
 							]
