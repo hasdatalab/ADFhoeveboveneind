@@ -130,7 +130,7 @@
 											},
 											"sink": {
 												"name": "x_factor",
-												"type": "Int64"
+												"type": "Double"
 											}
 										},
 										{
