@@ -1029,6 +1029,133 @@
 									"type": "DatasetReference"
 								}
 							]
+						},
+						{
+							"name": "Heat_detection",
+							"description": "",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:03:00",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
+									}
+								},
+								"sink": {
+									"type": "AzurePostgreSQLSink",
+									"writeBatchSize": 1000000,
+									"writeBatchTimeout": "00:30:00",
+									"writeMethod": "CopyCommand"
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['animal_id']"
+											},
+											"sink": {
+												"name": "animal_id",
+												"type": "Int64"
+											}
+										},
+										{
+											"source": {
+												"path": "['start_date']"
+											},
+											"sink": {
+												"name": "start_date",
+												"type": "DateTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['end_date']"
+											},
+											"sink": {
+												"name": "end_date",
+												"type": "DateTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['x_factor']"
+											},
+											"sink": {
+												"name": "x_factor",
+												"type": "Double"
+											}
+										},
+										{
+											"source": {
+												"path": "['attentions']['increased']"
+											},
+											"sink": {
+												"name": "attentions_increased",
+												"type": "Boolean"
+											}
+										},
+										{
+											"source": {
+												"path": "['attentions']['suspicious']"
+											},
+											"sink": {
+												"name": "attentions_suspicious",
+												"type": "Boolean"
+											}
+										},
+										{
+											"source": {
+												"path": "['label_type']"
+											},
+											"sink": {
+												"name": "label_type",
+												"type": "Int64"
+											}
+										},
+										{
+											"source": {
+												"path": "$['status']"
+											},
+											"sink": {
+												"name": "status",
+												"type": "Int32"
+											}
+										}
+									],
+									"collectionReference": "$['activity_data']"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "API_GetHeatData",
+									"type": "DatasetReference",
+									"parameters": {
+										"id": "@item().id",
+										"start_date": "@variables('start_date')",
+										"end_date": "@variables('end_date')"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "table_staging_nedapheatdetection",
+									"type": "DatasetReference"
+								}
+							]
 						}
 					]
 				}
