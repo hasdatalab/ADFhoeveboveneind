@@ -1085,6 +1085,134 @@
 											"parameters": {}
 										}
 									]
+								},
+								{
+									"name": "Heat_detection",
+									"description": "",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 1,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "RestSource",
+											"httpRequestTimeout": "00:03:00",
+											"requestInterval": "00.00:00:00.010",
+											"requestMethod": "GET",
+											"paginationRules": {
+												"supportRFC5988": "true"
+											}
+										},
+										"sink": {
+											"type": "AzurePostgreSQLSink",
+											"writeBatchSize": 1000000,
+											"writeBatchTimeout": "00:30:00",
+											"writeMethod": "CopyCommand"
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"mappings": [
+												{
+													"source": {
+														"path": "[['animal_id']"
+													},
+													"sink": {
+														"name": "animal_id",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "[['start_date']"
+													},
+													"sink": {
+														"name": "start_date",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['end_date']"
+													},
+													"sink": {
+														"name": "end_date",
+														"type": "DateTime"
+													}
+												},
+												{
+													"source": {
+														"path": "[['x_factor']"
+													},
+													"sink": {
+														"name": "x_factor",
+														"type": "Double"
+													}
+												},
+												{
+													"source": {
+														"path": "[['attentions']['increased']"
+													},
+													"sink": {
+														"name": "attentions_increased",
+														"type": "Boolean"
+													}
+												},
+												{
+													"source": {
+														"path": "[['attentions']['suspicious']"
+													},
+													"sink": {
+														"name": "attentions_suspicious",
+														"type": "Boolean"
+													}
+												},
+												{
+													"source": {
+														"path": "[['label_type']"
+													},
+													"sink": {
+														"name": "label_type",
+														"type": "Int64"
+													}
+												},
+												{
+													"source": {
+														"path": "$['status']"
+													},
+													"sink": {
+														"name": "status",
+														"type": "Int32"
+													}
+												}
+											],
+											"collectionReference": "$['activity_data']"
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "API_GetHeatData",
+											"type": "DatasetReference",
+											"parameters": {
+												"id": "@item().id",
+												"start_date": "@variables('start_date')",
+												"end_date": "@variables('end_date')"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "table_staging_nedapheatdetection",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									]
 								}
 							]
 						}
@@ -1252,7 +1380,9 @@
 				"[concat(variables('factoryId'), '/datasets/API_GetCowSteps')]",
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcowsteps')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowEating')]",
-				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcoweating')]"
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcoweating')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetHeatData')]",
+				"[concat(variables('factoryId'), '/datasets/table_staging_nedapheatdetection')]"
 			]
 		},
 		{
@@ -4875,6 +5005,92 @@
 				"[concat(variables('factoryId'), '/datasets/table_DWH_cow_milkings')]",
 				"[concat(variables('factoryId'), '/datasets/table_DWH_cow_location')]",
 				"[concat(variables('factoryId'), '/datasets/table_DWH_leg_activity')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetHeatData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Nedap_API",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat(' https://api.nedap-bi.com/v1/heat_detection/activity/animal/two_hour_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Nedap_API')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapheatdetection')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapheatdetection"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DWH_Hoeve_boveneind')]"
 			]
 		}
 	]

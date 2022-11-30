@@ -1413,6 +1413,53 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/table_staging_nedapheatdetection')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH_Hoeve_boveneind",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "staging"
+				},
+				"annotations": [],
+				"type": "AzurePostgreSqlTable",
+				"schema": [
+					{
+						"name": "animal_id",
+						"type": "bigint",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "quarter",
+						"type": "timestamp without time zone",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "total",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "status",
+						"type": "integer",
+						"precision": 0,
+						"scale": 0
+					}
+				],
+				"typeProperties": {
+					"schema": "staging",
+					"table": "nedapheatdetection"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/API_GetCowBehaviour')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1514,43 +1561,6 @@
 				"typeProperties": {
 					"relativeUrl": {
 						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/leg_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/Nedap_API')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/API_GetCowLying')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "Nedap_API",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"id": {
-						"type": "string"
-					},
-					"start_date": {
-						"type": "string"
-					},
-					"end_date": {
-						"type": "string"
-					}
-				},
-				"folder": {
-					"name": "Nedap API"
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/lying/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},
