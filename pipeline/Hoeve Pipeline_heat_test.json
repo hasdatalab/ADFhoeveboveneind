@@ -87,12 +87,6 @@
 										"supportRFC5988": "true"
 									}
 								},
-								"sink": {
-									"type": "AzurePostgreSQLSink",
-									"writeBatchSize": 1000000,
-									"writeBatchTimeout": "00:30:00",
-									"writeMethod": "CopyCommand"
-								},
 								"enableStaging": false,
 								"translator": {
 									"type": "TabularTranslator",
@@ -158,12 +152,6 @@
 										"start_date": "@variables('start_date')",
 										"end_date": "@variables('end_date')"
 									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "table_staging_nedapcoweating",
-									"type": "DatasetReference"
 								}
 							]
 						}
