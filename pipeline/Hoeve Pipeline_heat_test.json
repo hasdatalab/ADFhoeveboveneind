@@ -109,31 +109,55 @@
 										{
 											"source": {
 												"path": "$['activity_data'][0]['start_date']"
+											},
+											"sink": {
+												"name": "start_date",
+												"type": "DateTime"
 											}
 										},
 										{
 											"source": {
 												"path": "$['activity_data'][0]['end_date']"
+											},
+											"sink": {
+												"name": "end_date",
+												"type": "DateTime"
 											}
 										},
 										{
 											"source": {
 												"path": "$['activity_data'][0]['x_factor']"
+											},
+											"sink": {
+												"name": "x_factor",
+												"type": "Int64"
 											}
 										},
 										{
 											"source": {
 												"path": "$['activity_data'][0]['attentions']['increased']"
+											},
+											"sink": {
+												"name": "attentions_increased",
+												"type": "Boolean"
 											}
 										},
 										{
 											"source": {
 												"path": "$['activity_data'][0]['attentions']['suspicious']"
+											},
+											"sink": {
+												"name": "attentions_suspicious",
+												"type": "Boolean"
 											}
 										},
 										{
 											"source": {
 												"path": "$['activity_data'][0]['label_type']"
+											},
+											"sink": {
+												"name": "label_type",
+												"type": "Int64"
 											}
 										},
 										{
