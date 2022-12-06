@@ -1,0 +1,41 @@
+{
+	"name": "V2 Update Facts Dataflow_eating",
+	"properties": {
+		"description": "Gets the collected data from the staging and finds the active matching cow from the DWH 'Cow Dim'",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "table_staging_nedapcoweating",
+						"type": "DatasetReference"
+					},
+					"name": "EatingStaging"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "table_DWH_cow_eating",
+						"type": "DatasetReference"
+					},
+					"name": "EatingDWH",
+					"rejectedDataLinkedService": {
+						"referenceName": "errorlogblob",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [
+				{
+					"name": "EatingLookup",
+					"flowlet": {
+						"referenceName": "V2 DWH Lookup Eating Flowlet",
+						"type": "DataFlowReference"
+					}
+				}
+			],
+			"script": "source(output(\n\t\tanimal_id as long,\n\t\tdate as timestamp,\n\t\ttotal as integer,\n\t\taverage as integer,\n\t\tattention as string,\n\t\tstatus as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> EatingStaging\nEatingStaging compose(mapColumn(\n\t\tanimal_id,\n\t\tdate,\n\t\ttotal,\n\t\taverage,\n\t\tattention\n\t),\n\tcomposition: 'V2 DWH Lookup Eating Flowlet') ~> EatingLookup@(CowEating)\nEatingLookup@CowEating sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tdim_time_id as integer,\n\t\tdim_date_id as integer,\n\t\ttotal_eating_time as integer,\n\t\taverage_eating_time as integer,\n\t\tattention_needed as boolean\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tbatchSize: 1000,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tdim_time_id,\n\t\tdim_date_id,\n\t\ttotal_eating_time = total,\n\t\taverage_eating_time = average,\n\t\tattention_needed = attention\n\t)) ~> EatingDWH"
+		}
+	}
+}
