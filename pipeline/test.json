@@ -344,7 +344,7 @@
 				"typeProperties": {
 					"variableName": "start_date",
 					"value": {
-						"value": "2022-11-12T00:00:00Z",
+						"value": "@addDays(startOfDay(utcnow()), -4)",
 						"type": "Expression"
 					}
 				}
@@ -357,7 +357,7 @@
 				"typeProperties": {
 					"variableName": "end_date",
 					"value": {
-						"value": "2022-11-09T00:00:00Z",
+						"value": "@addDays(startOfDay(utcnow()), 0)",
 						"type": "Expression"
 					}
 				}
