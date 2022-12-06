@@ -3,37 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Update Cows In DWH",
-				"type": "ExecuteDataFlow",
-				"dependsOn": [
-					{
-						"activity": "Get Facts To Staging",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "1.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataflow": {
-						"referenceName": "V2 Update Cows Dataflow",
-						"type": "DataFlowReference"
-					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
-					},
-					"traceLevel": "Fine"
-				}
-			},
-			{
 				"name": "Copy Cows To Staging",
 				"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
 				"type": "Copy",
@@ -354,38 +323,6 @@
 				}
 			},
 			{
-				"name": "Truncate Staging",
-				"description": "Empties staging tables ",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Get Facts To DWH",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzurePostgreSqlSource",
-						"query": "truncate staging.nedapcowid;\ntruncate staging.nedapcowactivityneck;\ntruncate staging.nedapcowactivityleg;\ntruncate staging.nedapcowbehaviour;\ntruncate staging.nedapcoweating;\ntruncate staging.nedapcowlying;\ntruncate staging.nedapcowstanding;\ntruncate staging.nedapcowstandups;\ntruncate staging.nedapcowsteps;\ntruncate staging.nedapcowwalking;\ntruncate staging.nedaplocationdata;\ntruncate staging.geamelkrobot;\n\nselect 0 id;",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "table_staging_nedapcowactivityneck",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
 				"name": "execute_refresh_token",
 				"description": "executes the \"refresh_access_token\" pipeline so we have a fresh access token",
 				"type": "ExecutePipeline",
@@ -397,37 +334,6 @@
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "Get Facts To DWH",
-				"type": "ExecuteDataFlow",
-				"dependsOn": [
-					{
-						"activity": "Update Cows In DWH",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "1.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataflow": {
-						"referenceName": "V2 Update Facts Dataflow_eating",
-						"type": "DataFlowReference"
-					},
-					"compute": {
-						"coreCount": 16,
-						"computeType": "General"
-					},
-					"traceLevel": "Fine"
 				}
 			},
 			{
