@@ -26,7 +26,7 @@
 					"name": "filter1"
 				}
 			],
-			"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nDWHCows filter(isNull(end_date) == true() ) ~> filter1"
+			"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nDWHCows filter(isNull(end_date) == true()) ~> filter1"
 		}
 	}
 }
