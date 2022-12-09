@@ -3998,7 +3998,7 @@
 			"properties": {
 				"description": "Triggers the Hoeve Pipeline every 4 days.",
 				"annotations": [],
-				"runtimeState": "Stopped",
+				"runtimeState": "Started",
 				"pipelines": [
 					{
 						"pipelineReference": {
@@ -4014,7 +4014,8 @@
 						"frequency": "Day",
 						"interval": 4,
 						"startTime": "2022-02-27T06:00:00",
-						"timeZone": "W. Europe Standard Time"
+						"timeZone": "W. Europe Standard Time",
+						"schedule": {}
 					}
 				}
 			},
