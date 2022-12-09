@@ -1,0 +1,292 @@
+{
+	"name": "Update_Cows",
+	"properties": {
+		"activities": [
+			{
+				"name": "Update Cows In DWH",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "For Every Cow",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "V2 Update Cows Dataflow",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Copy Cows To Staging",
+				"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "execute_refresh_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "AzurePostgreSQLSink",
+						"writeBatchSize": 1000000,
+						"writeBatchTimeout": "00:30:00",
+						"preCopyScript": "truncate staging.nedapcowid\n",
+						"writeMethod": "CopyCommand"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['id']"
+								},
+								"sink": {
+									"name": "id",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"path": "['condition']"
+								},
+								"sink": {
+									"name": "condition",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['group_id']"
+								},
+								"sink": {
+									"name": "group_id",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"path": "['life_number']"
+								},
+								"sink": {
+									"name": "life_number",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['responder1']"
+								},
+								"sink": {
+									"name": "responder1",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['responder2']"
+								},
+								"sink": {
+									"name": "responder2",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['responder3']"
+								},
+								"sink": {
+									"name": "responder3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['number']"
+								},
+								"sink": {
+									"name": "number",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"path": "['uuid']"
+								},
+								"sink": {
+									"name": "uuid",
+									"type": "String"
+								}
+							}
+						],
+						"collectionReference": "$['animals']",
+						"mapComplexValuesToString": false
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "API_GetCows",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "table_staging_nedapcowid",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "For Every Cow",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Copy Cows To Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzurePostgreSqlSource",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "view_staging_CowIDView",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Truncate Staging",
+				"description": "Empties staging tables ",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Update Cows In DWH",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzurePostgreSqlSource",
+						"query": "truncate staging.nedapcowid;\nselect 0 id;",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "table_staging_nedapcowactivityneck",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "execute_refresh_token",
+				"description": "executes the \"refresh_access_token\" pipeline so we have a fresh access token",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "refresh_acces_token",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "start_date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "start_date",
+					"value": {
+						"value": "@addDays(startOfDay(utcnow()), -4)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "end_date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "end_date",
+					"value": {
+						"value": "@addDays(startOfDay(utcnow()), 0)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"start_date": {
+				"type": "String"
+			},
+			"end_date": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-10-20T14:58:40Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
