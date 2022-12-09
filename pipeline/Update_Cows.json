@@ -23,7 +23,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "V2 Update Cows Dataflow",
+						"referenceName": "V2 Update Cows Dataflow_V1",
 						"type": "DataFlowReference"
 					},
 					"compute": {
