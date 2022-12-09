@@ -48,6 +48,9 @@
 					"name": "DatatypeConversie"
 				},
 				{
+					"name": "activeDBcow"
+				},
+				{
 					"name": "CowEatingStaging"
 				},
 				{
@@ -115,7 +118,7 @@
 				"     schemaName: 'warehouse',",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
-				"CowEatingStaging, DimCows lookup(animal_id == nedap_id,",
+				"CowEatingStaging, activeDBcow lookup(animal_id == nedap_id,",
 				"     multiple: true,",
 				"     broadcast: 'right')~> CowLookup",
 				"SplitDateTime, DimDate lookup(DateCalc == toString(DimDate@date),",
@@ -128,6 +131,7 @@
 				"          TimeCalc = trim(split(toString(date),' ')[2])) ~> SplitDateTime",
 				"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
 				"CowLookup derive(attention = toBoolean(attention)) ~> DatatypeConversie",
+				"DimCows filter(isNull(end_date) == true()) ~> activeDBcow",
 				"NullFilter output(mapColumn(",
 				"          total,",
 				"          average,",
