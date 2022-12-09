@@ -3,7 +3,7 @@
 	"properties": {
 		"description": "Triggers the Hoeve Pipeline every 4 days.",
 		"annotations": [],
-		"runtimeState": "Stopped",
+		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
