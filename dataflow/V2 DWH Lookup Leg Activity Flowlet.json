@@ -44,6 +44,9 @@
 					"name": "NullFilter"
 				},
 				{
+					"name": "activeDBcows"
+				},
+				{
 					"name": "StagingInput"
 				},
 				{
@@ -113,7 +116,7 @@
 				"     schemaName: 'warehouse',",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-				"StagingInput, DimCow lookup(animal_id == nedap_id,",
+				"StagingInput, activeDBcows lookup(animal_id == nedap_id,",
 				"     multiple: true,",
 				"     broadcast: 'right')~> CowLookup",
 				"SplitDateTime, DimDate lookup(DateCalc == toString(date),",
@@ -125,6 +128,7 @@
 				"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
 				"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
 				"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+				"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 				"NullFilter output(mapColumn(",
 				"          dim_cow_id,",
 				"          dim_date_id,",
