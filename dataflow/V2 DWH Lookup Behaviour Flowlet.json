@@ -45,6 +45,9 @@
 					"name": "NullFilter"
 				},
 				{
+					"name": "activeDBcows"
+				},
+				{
 					"name": "CowBehaviourStaging",
 					"description": "Staging area data cow behaviour"
 				},
@@ -113,7 +116,7 @@
 				"     schemaName: 'warehouse',",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
-				"CowBehaviourStaging, DimCows lookup(animal_id == nedap_id,",
+				"CowBehaviourStaging, activeDBcows lookup(animal_id == nedap_id,",
 				"     multiple: true,",
 				"     broadcast: 'right',",
 				"     pickup: 'any')~> CowLookup",
@@ -126,6 +129,7 @@
 				"     multiple: true,",
 				"     broadcast: 'right')~> DateLookup",
 				"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+				"DimCows filter(isNull(end_date) == true()) ~> activeDBcows",
 				"NullFilter output(mapColumn(",
 				"          dim_cow_id,",
 				"          dim_time_id,",
