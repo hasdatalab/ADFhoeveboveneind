@@ -1245,7 +1245,7 @@
 				"typeProperties": {
 					"variableName": "start_date",
 					"value": {
-						"value": "@addDays(startOfDay(utcnow()), -4)",
+						"value": "@addDays(startOfDay(utcnow()), -5)",
 						"type": "Expression"
 					}
 				}
@@ -1258,7 +1258,7 @@
 				"typeProperties": {
 					"variableName": "end_date",
 					"value": {
-						"value": "@addDays(startOfDay(utcnow()), 0)",
+						"value": "@addDays(startOfDay(utcnow()), -1)",
 						"type": "Expression"
 					}
 				}
