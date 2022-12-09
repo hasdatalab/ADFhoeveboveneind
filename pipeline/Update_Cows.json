@@ -249,32 +249,6 @@
 					},
 					"waitOnCompletion": true
 				}
-			},
-			{
-				"name": "start_date",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "start_date",
-					"value": {
-						"value": "@addDays(startOfDay(utcnow()), -4)",
-						"type": "Expression"
-					}
-				}
-			},
-			{
-				"name": "end_date",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "end_date",
-					"value": {
-						"value": "@addDays(startOfDay(utcnow()), 0)",
-						"type": "Expression"
-					}
-				}
 			}
 		],
 		"variables": {
