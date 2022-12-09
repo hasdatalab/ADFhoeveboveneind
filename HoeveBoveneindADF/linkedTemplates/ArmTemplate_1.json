@@ -506,6 +506,9 @@
 							"name": "NullFilter"
 						},
 						{
+							"name": "activeDBcows"
+						},
+						{
 							"name": "CowBehaviourStaging",
 							"description": "Staging area data cow behaviour"
 						},
@@ -574,7 +577,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
-						"CowBehaviourStaging, DimCows lookup(animal_id == nedap_id,",
+						"CowBehaviourStaging, activeDBcows lookup(animal_id == nedap_id,",
 						"     multiple: true,",
 						"     broadcast: 'right',",
 						"     pickup: 'any')~> CowLookup",
@@ -587,6 +590,7 @@
 						"     multiple: true,",
 						"     broadcast: 'right')~> DateLookup",
 						"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"DimCows filter(isNull(end_date) == true()) ~> activeDBcows",
 						"NullFilter output(mapColumn(",
 						"          dim_cow_id,",
 						"          dim_time_id,",
@@ -649,6 +653,9 @@
 						},
 						{
 							"name": "DatatypeConversie"
+						},
+						{
+							"name": "activeDBcow"
 						},
 						{
 							"name": "CowEatingStaging"
@@ -718,7 +725,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
-						"CowEatingStaging, DimCows lookup(animal_id == nedap_id,",
+						"CowEatingStaging, activeDBcow lookup(animal_id == nedap_id,",
 						"     multiple: true,",
 						"     broadcast: 'right')~> CowLookup",
 						"SplitDateTime, DimDate lookup(DateCalc == toString(DimDate@date),",
@@ -731,6 +738,7 @@
 						"          TimeCalc = trim(split(toString(date),' ')[2])) ~> SplitDateTime",
 						"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
 						"CowLookup derive(attention = toBoolean(attention)) ~> DatatypeConversie",
+						"DimCows filter(isNull(end_date) == true()) ~> activeDBcow",
 						"NullFilter output(mapColumn(",
 						"          total,",
 						"          average,",
@@ -739,126 +747,6 @@
 						"          dim_date_id,",
 						"          dim_time_id",
 						"     )) ~> CowEating"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Generic Flowlet')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "Flowlet",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "New_Postgre_SQL_DWH",
-								"type": "LinkedServiceReference"
-							},
-							"name": "DateDimDWH"
-						},
-						{
-							"linkedService": {
-								"referenceName": "New_Postgre_SQL_DWH",
-								"type": "LinkedServiceReference"
-							},
-							"name": "TimeDimDWH"
-						},
-						{
-							"linkedService": {
-								"referenceName": "New_Postgre_SQL_DWH",
-								"type": "LinkedServiceReference"
-							},
-							"name": "ValidCowsDWH"
-						}
-					],
-					"sinks": [],
-					"transformations": [
-						{
-							"name": "CowLookup"
-						},
-						{
-							"name": "DateLookup"
-						},
-						{
-							"name": "TimeLookup"
-						},
-						{
-							"name": "SplitDateTime"
-						},
-						{
-							"name": "NullFilter"
-						},
-						{
-							"name": "StagingInput"
-						},
-						{
-							"name": "DWHOutput"
-						}
-					],
-					"scriptLines": [
-						"input(output(",
-						"          animal_id as long,",
-						"          quarter as timestamp,",
-						"          total as integer",
-						"     ),",
-						"     order: 0) ~> StagingInput",
-						"source(output(",
-						"          DateID as integer,",
-						"          Date as date",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: 'DateView',",
-						"     schemaName: 'warehouse',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> DateDimDWH",
-						"source(output(",
-						"          TimeID as integer,",
-						"          time as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: 'TimeView',",
-						"     schemaName: 'warehouse',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> TimeDimDWH",
-						"source(output(",
-						"          id as integer,",
-						"          nedapid as long,",
-						"          cownumber as integer,",
-						"          respondernumber1 as long,",
-						"          respondernumber2 as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: 'ValidCowsView',",
-						"     schemaName: 'warehouse',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> ValidCowsDWH",
-						"StagingInput, ValidCowsDWH lookup(animal_id == nedapid,",
-						"     multiple: true,",
-						"     broadcast: 'right')~> CowLookup",
-						"SplitDateTime, DateDimDWH lookup(DateCalc == toString(Date),",
-						"     multiple: true,",
-						"     broadcast: 'right')~> DateLookup",
-						"DateLookup, TimeDimDWH lookup(TimeCalc == time,",
-						"     multiple: true,",
-						"     broadcast: 'right')~> TimeLookup",
-						"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
-						"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
-						"TimeLookup filter(isNull(id) == false() && isNull(DateID) == false() && isNull(TimeID) == false()) ~> NullFilter",
-						"NullFilter output(mapColumn(",
-						"          CowID = id,",
-						"          TimeID,",
-						"          DateID,",
-						"          total",
-						"     )) ~> DWHOutput"
 					]
 				}
 			},
@@ -910,6 +798,9 @@
 						},
 						{
 							"name": "NullFilter"
+						},
+						{
+							"name": "activeDBcows"
 						},
 						{
 							"name": "StagingInput"
@@ -981,7 +872,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-						"StagingInput, DimCow lookup(animal_id == nedap_id,",
+						"StagingInput, activeDBcows lookup(animal_id == nedap_id,",
 						"     multiple: true,",
 						"     broadcast: 'right')~> CowLookup",
 						"SplitDateTime, DimDate lookup(DateCalc == toString(date),",
@@ -993,6 +884,7 @@
 						"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
 						"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
 						"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 						"NullFilter output(mapColumn(",
 						"          dim_cow_id,",
 						"          dim_date_id,",
@@ -1044,6 +936,9 @@
 						},
 						{
 							"name": "Nullfilter"
+						},
+						{
+							"name": "activeDBcows"
 						},
 						{
 							"name": "LocationStaging"
@@ -1099,7 +994,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-						"LocationStaging, DimCow lookup(responder == neck_responder,",
+						"LocationStaging, activeDBcows lookup(responder == neck_responder,",
 						"     multiple: false,",
 						"     pickup: 'any',",
 						"     broadcast: 'auto')~> CowLookup",
@@ -1109,6 +1004,7 @@
 						"     pickup: 'any',",
 						"     broadcast: 'auto')~> DateLookup",
 						"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false()) ~> Nullfilter",
+						"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 						"Nullfilter output(mapColumn(",
 						"          each(match(true()))",
 						"     )) ~> CowLocation"
@@ -1173,6 +1069,9 @@
 						},
 						{
 							"name": "NullFilter"
+						},
+						{
+							"name": "activeDBcows"
 						},
 						{
 							"name": "Milkstaging"
@@ -1274,7 +1173,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-						"Milkstaging, DimCow lookup(koenummer == cownumber,",
+						"Milkstaging, activeDBcows lookup(koenummer == cownumber,",
 						"     multiple: true,",
 						"     broadcast: 'right',",
 						"     pickup: 'any')~> CowLookup",
@@ -1291,6 +1190,7 @@
 						"     pickup: 'any',",
 						"     broadcast: 'right')~> ErrorCodeLookup",
 						"ErrorCodeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 						"NullFilter output(mapColumn(",
 						"          dim_cow_id,",
 						"          dim_error_code_id,",
@@ -1561,6 +1461,43 @@
 				"typeProperties": {
 					"relativeUrl": {
 						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/activity/animal/leg_quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
+						"type": "Expression"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Nedap_API')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/API_GetCowLying')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Nedap_API",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"id": {
+						"type": "string"
+					},
+					"start_date": {
+						"type": "string"
+					},
+					"end_date": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Nedap API"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": {
+						"value": "@concat('https://api.nedap-bi.com/v1/behaviour/lying/animal/quarter_data?animal_id=',dataset().id,'&start_date=',startOfDay(dataset().start_date),'&end_date=',startOfDay(dataset().end_date))",
 						"type": "Expression"
 					}
 				},

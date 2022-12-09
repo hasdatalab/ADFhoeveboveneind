@@ -1326,7 +1326,7 @@
 						"typeProperties": {
 							"variableName": "start_date",
 							"value": {
-								"value": "@addDays(startOfDay(utcnow()), -5)",
+								"value": "@addDays(startOfDay(utcnow()), -4)",
 								"type": "Expression"
 							}
 						}
@@ -1339,7 +1339,7 @@
 						"typeProperties": {
 							"variableName": "end_date",
 							"value": {
-								"value": "@addDays(startOfDay(utcnow()), -1)",
+								"value": "@addDays(startOfDay(utcnow()), 0)",
 								"type": "Expression"
 							}
 						}
@@ -4072,6 +4072,9 @@
 							"name": "NullFilter"
 						},
 						{
+							"name": "activeDBcows"
+						},
+						{
 							"name": "CowBehaviourStaging",
 							"description": "Staging area data cow behaviour"
 						},
@@ -4140,7 +4143,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
-						"CowBehaviourStaging, DimCows lookup(animal_id == nedap_id,",
+						"CowBehaviourStaging, activeDBcows lookup(animal_id == nedap_id,",
 						"     multiple: true,",
 						"     broadcast: 'right',",
 						"     pickup: 'any')~> CowLookup",
@@ -4153,6 +4156,7 @@
 						"     multiple: true,",
 						"     broadcast: 'right')~> DateLookup",
 						"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"DimCows filter(isNull(end_date) == true()) ~> activeDBcows",
 						"NullFilter output(mapColumn(",
 						"          dim_cow_id,",
 						"          dim_time_id,",
@@ -4217,6 +4221,9 @@
 						},
 						{
 							"name": "DatatypeConversie"
+						},
+						{
+							"name": "activeDBcow"
 						},
 						{
 							"name": "CowEatingStaging"
@@ -4286,7 +4293,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCows",
-						"CowEatingStaging, DimCows lookup(animal_id == nedap_id,",
+						"CowEatingStaging, activeDBcow lookup(animal_id == nedap_id,",
 						"     multiple: true,",
 						"     broadcast: 'right')~> CowLookup",
 						"SplitDateTime, DimDate lookup(DateCalc == toString(DimDate@date),",
@@ -4299,6 +4306,7 @@
 						"          TimeCalc = trim(split(toString(date),' ')[2])) ~> SplitDateTime",
 						"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
 						"CowLookup derive(attention = toBoolean(attention)) ~> DatatypeConversie",
+						"DimCows filter(isNull(end_date) == true()) ~> activeDBcow",
 						"NullFilter output(mapColumn(",
 						"          total,",
 						"          average,",
@@ -4312,128 +4320,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/DWH_Hoeve_boveneind')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/V2 DWH Lookup Generic Flowlet')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "Flowlet",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "New_Postgre_SQL_DWH",
-								"type": "LinkedServiceReference"
-							},
-							"name": "DateDimDWH"
-						},
-						{
-							"linkedService": {
-								"referenceName": "New_Postgre_SQL_DWH",
-								"type": "LinkedServiceReference"
-							},
-							"name": "TimeDimDWH"
-						},
-						{
-							"linkedService": {
-								"referenceName": "New_Postgre_SQL_DWH",
-								"type": "LinkedServiceReference"
-							},
-							"name": "ValidCowsDWH"
-						}
-					],
-					"sinks": [],
-					"transformations": [
-						{
-							"name": "CowLookup"
-						},
-						{
-							"name": "DateLookup"
-						},
-						{
-							"name": "TimeLookup"
-						},
-						{
-							"name": "SplitDateTime"
-						},
-						{
-							"name": "NullFilter"
-						},
-						{
-							"name": "StagingInput"
-						},
-						{
-							"name": "DWHOutput"
-						}
-					],
-					"scriptLines": [
-						"input(output(",
-						"          animal_id as long,",
-						"          quarter as timestamp,",
-						"          total as integer",
-						"     ),",
-						"     order: 0) ~> StagingInput",
-						"source(output(",
-						"          DateID as integer,",
-						"          Date as date",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: 'DateView',",
-						"     schemaName: 'warehouse',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> DateDimDWH",
-						"source(output(",
-						"          TimeID as integer,",
-						"          time as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: 'TimeView',",
-						"     schemaName: 'warehouse',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> TimeDimDWH",
-						"source(output(",
-						"          id as integer,",
-						"          nedapid as long,",
-						"          cownumber as integer,",
-						"          respondernumber1 as long,",
-						"          respondernumber2 as long",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     tableName: 'ValidCowsView',",
-						"     schemaName: 'warehouse',",
-						"     store: 'postgres',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> ValidCowsDWH",
-						"StagingInput, ValidCowsDWH lookup(animal_id == nedapid,",
-						"     multiple: true,",
-						"     broadcast: 'right')~> CowLookup",
-						"SplitDateTime, DateDimDWH lookup(DateCalc == toString(Date),",
-						"     multiple: true,",
-						"     broadcast: 'right')~> DateLookup",
-						"DateLookup, TimeDimDWH lookup(TimeCalc == time,",
-						"     multiple: true,",
-						"     broadcast: 'right')~> TimeLookup",
-						"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
-						"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
-						"TimeLookup filter(isNull(id) == false() && isNull(DateID) == false() && isNull(TimeID) == false()) ~> NullFilter",
-						"NullFilter output(mapColumn(",
-						"          CowID = id,",
-						"          TimeID,",
-						"          DateID,",
-						"          total",
-						"     )) ~> DWHOutput"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/New_Postgre_SQL_DWH')]"
 			]
 		},
 		{
@@ -4482,6 +4368,9 @@
 						},
 						{
 							"name": "NullFilter"
+						},
+						{
+							"name": "activeDBcows"
 						},
 						{
 							"name": "StagingInput"
@@ -4553,7 +4442,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-						"StagingInput, DimCow lookup(animal_id == nedap_id,",
+						"StagingInput, activeDBcows lookup(animal_id == nedap_id,",
 						"     multiple: true,",
 						"     broadcast: 'right')~> CowLookup",
 						"SplitDateTime, DimDate lookup(DateCalc == toString(date),",
@@ -4565,6 +4454,7 @@
 						"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
 						"          TimeCalc = trim(split(toString(quarter),' ')[2])) ~> SplitDateTime",
 						"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 						"NullFilter output(mapColumn(",
 						"          dim_cow_id,",
 						"          dim_date_id,",
@@ -4620,6 +4510,9 @@
 							"name": "Nullfilter"
 						},
 						{
+							"name": "activeDBcows"
+						},
+						{
 							"name": "LocationStaging"
 						},
 						{
@@ -4673,7 +4566,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-						"LocationStaging, DimCow lookup(responder == neck_responder,",
+						"LocationStaging, activeDBcows lookup(responder == neck_responder,",
 						"     multiple: false,",
 						"     pickup: 'any',",
 						"     broadcast: 'auto')~> CowLookup",
@@ -4683,6 +4576,7 @@
 						"     pickup: 'any',",
 						"     broadcast: 'auto')~> DateLookup",
 						"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false()) ~> Nullfilter",
+						"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 						"Nullfilter output(mapColumn(",
 						"          each(match(true()))",
 						"     )) ~> CowLocation"
@@ -4749,6 +4643,9 @@
 						},
 						{
 							"name": "NullFilter"
+						},
+						{
+							"name": "activeDBcows"
 						},
 						{
 							"name": "Milkstaging"
@@ -4850,7 +4747,7 @@
 						"     schemaName: 'warehouse',",
 						"     store: 'postgres',",
 						"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-						"Milkstaging, DimCow lookup(koenummer == cownumber,",
+						"Milkstaging, activeDBcows lookup(koenummer == cownumber,",
 						"     multiple: true,",
 						"     broadcast: 'right',",
 						"     pickup: 'any')~> CowLookup",
@@ -4867,6 +4764,7 @@
 						"     pickup: 'any',",
 						"     broadcast: 'right')~> ErrorCodeLookup",
 						"ErrorCodeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
+						"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 						"NullFilter output(mapColumn(",
 						"          dim_cow_id,",
 						"          dim_error_code_id,",
@@ -5511,6 +5409,44 @@
 				"[concat(variables('factoryId'), '/datasets/table_staging_nedapcoweating')]",
 				"[concat(variables('factoryId'), '/datasets/table_DWH_cow_eating')]",
 				"[concat(variables('factoryId'), '/linkedServices/errorlogblob')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/daily_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Update_Cows",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2022-12-09T19:11:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								1
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Update_Cows')]"
 			]
 		}
 	]
