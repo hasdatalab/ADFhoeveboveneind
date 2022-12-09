@@ -7,7 +7,7 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "execute_refresh_token",
+						"activity": "Copy Cows To Staging",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -78,6 +78,146 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "Copy Cows To Staging",
+				"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "execute_refresh_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "AzurePostgreSQLSink",
+						"writeBatchSize": 1000000,
+						"writeBatchTimeout": "00:30:00",
+						"preCopyScript": "truncate staging.nedapcowid\n",
+						"writeMethod": "CopyCommand"
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['id']"
+								},
+								"sink": {
+									"name": "id",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"path": "['condition']"
+								},
+								"sink": {
+									"name": "condition",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['group_id']"
+								},
+								"sink": {
+									"name": "group_id",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"path": "['life_number']"
+								},
+								"sink": {
+									"name": "life_number",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['responder1']"
+								},
+								"sink": {
+									"name": "responder1",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['responder2']"
+								},
+								"sink": {
+									"name": "responder2",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['responder3']"
+								},
+								"sink": {
+									"name": "responder3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "['number']"
+								},
+								"sink": {
+									"name": "number",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"path": "['uuid']"
+								},
+								"sink": {
+									"name": "uuid",
+									"type": "String"
+								}
+							}
+						],
+						"collectionReference": "$['animals']",
+						"mapComplexValuesToString": false
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "API_GetCows",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "table_staging_nedapcowid",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"variables": {
