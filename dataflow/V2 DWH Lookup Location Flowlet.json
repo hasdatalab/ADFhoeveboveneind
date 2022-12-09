@@ -34,6 +34,9 @@
 					"name": "Nullfilter"
 				},
 				{
+					"name": "activeDBcows"
+				},
+				{
 					"name": "LocationStaging"
 				},
 				{
@@ -87,7 +90,7 @@
 				"     schemaName: 'warehouse',",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-				"LocationStaging, DimCow lookup(responder == neck_responder,",
+				"LocationStaging, activeDBcows lookup(responder == neck_responder,",
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> CowLookup",
@@ -97,6 +100,7 @@
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> DateLookup",
 				"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false()) ~> Nullfilter",
+				"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
 				"Nullfilter output(mapColumn(",
 				"          each(match(true()))",
 				"     )) ~> CowLocation"
