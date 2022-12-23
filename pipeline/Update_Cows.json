@@ -56,7 +56,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzurePostgreSqlSource",
-						"query": "-- truncate staging.nedapcowid;\nselect 0 id;",
+						"query": "truncate staging.nedapcowid;\nselect 0 id;",
 						"partitionOption": "None"
 					},
 					"dataset": {
