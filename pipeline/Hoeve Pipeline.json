@@ -3,37 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Update Cows In DWH",
-				"type": "ExecuteDataFlow",
-				"dependsOn": [
-					{
-						"activity": "Get Facts To Staging",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "1.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataflow": {
-						"referenceName": "V2 Update Cows Dataflow_V1",
-						"type": "DataFlowReference"
-					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
-					},
-					"traceLevel": "Fine"
-				}
-			},
-			{
 				"name": "Copy Cows To Staging",
 				"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
 				"type": "Copy",
@@ -1261,6 +1230,26 @@
 						"value": "@addDays(startOfDay(utcnow()), 0)",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "Update Cows In DWH",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Get Facts To Staging",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Update_Cows",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
 				}
 			}
 		],
