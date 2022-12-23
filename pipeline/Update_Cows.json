@@ -85,7 +85,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "execute_refresh_token",
+						"activity": "number to null",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -341,6 +341,70 @@
 						"computeType": "General"
 					},
 					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "number to null",
+				"description": "Empties staging tables ",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "execute_refresh_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzurePostgreSqlSource",
+						"query": "update warehouse.dim_cow set end_date = '9999-01-01'\nwhere end_date is null;",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "table_DWH_dim_cow",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "null to number",
+				"description": "Empties staging tables ",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "V2 Update Cows no update",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzurePostgreSqlSource",
+						"query": "update warehouse.dim_cow set end_date = null\nwhere end_date = '9999-01-01';",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "table_DWH_dim_cow",
+						"type": "DatasetReference"
+					}
 				}
 			}
 		],
