@@ -1,5 +1,5 @@
 {
-	"name": "V2 Update Cows Dataflow_V1_copy4",
+	"name": "V2 Update Cows no update",
 	"properties": {
 		"description": "Updates the Cow Dim table in the PostGreDWH, by inserting new cows and updating excisting ones with new information while flagging old ones as on",
 		"type": "MappingDataFlow",
