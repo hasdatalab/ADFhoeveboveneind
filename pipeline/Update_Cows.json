@@ -372,7 +372,7 @@
 						"referenceName": "table_DWH_dim_cow",
 						"type": "DatasetReference"
 					},
-					"firstRowOnly": true
+					"firstRowOnly": false
 				}
 			},
 			{
