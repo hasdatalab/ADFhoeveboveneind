@@ -89,6 +89,12 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "execute_refresh_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"policy": {
@@ -347,14 +353,7 @@
 				"name": "number to null",
 				"description": "Empties staging tables ",
 				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "execute_refresh_token",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
