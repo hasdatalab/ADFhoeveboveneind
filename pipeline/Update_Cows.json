@@ -365,7 +365,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzurePostgreSqlSource",
-						"query": "update warehouse.dim_cow set 'end_date ' = cast('9999-01-01' as date)\nwhere end_date is null;",
+						"query": "update warehouse.dim_cow set \"end_date\" = cast('9999-01-01' as date)\nwhere end_date is null;",
 						"partitionOption": "None"
 					},
 					"dataset": {
