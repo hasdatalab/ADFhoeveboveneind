@@ -356,7 +356,7 @@
 							"name": "AlterRow1"
 						}
 					],
-					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nCreateDateTimestamp1 filter(end_date == toDate('9999-01-01')) ~> activeDBcows\nactiveDBcows, StagingCows exists(lifenumber == life_number,\n\tnegate:false,\n\tbroadcast: 'auto')~> activatecows\nDWHCows derive(current_date = currentDate(),\n\t\tyesterday = addDays(currentDate(),-1),\n\t\tcurrent_timestamp = currentTimestamp(),\n\t\tend_date = toDate('9999-01-01')) ~> CreateDateTimestamp1\nactivatecows, StagingCows join(lifenumber == life_number,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> CombineApiDimCow\nCombineApiDimCow filter(leg_responder != responder1 || neck_responder != responder2 || group != group_id || cownumber != number) ~> UpdateAvailable\nUpdateAvailable alterRow(updateIf(true())) ~> AlterRow1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['dim_cow_id'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date = yesterday,\n\t\tgroup,\n\t\tlast_updated = current_timestamp\n\t)) ~> SetCowEnddate3"
+					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nCreateDateTimestamp1 filter(var_end_date == toDate('9999-01-01')) ~> activeDBcows\nactiveDBcows, StagingCows exists(lifenumber == life_number,\n\tnegate:false,\n\tbroadcast: 'auto')~> activatecows\nDWHCows derive(var_current_date = currentDate(),\n\t\tvar_yesterday = addDays(currentDate(),-1),\n\t\tvar_current_timestamp = currentTimestamp(),\n\t\tvar_end_date = toDate('9999-01-01')) ~> CreateDateTimestamp1\nactivatecows, StagingCows join(lifenumber == life_number,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> CombineApiDimCow\nCombineApiDimCow filter(end_date == toDate('9999-01-01') && leg_responder != responder1 || \r\nend_date == toDate('9999-01-01') && neck_responder != responder2 || \r\nend_date == toDate('9999-01-01') && group != group_id || \r\nend_date == toDate('9999-01-01') && cownumber != number) ~> UpdateAvailable\nUpdateAvailable alterRow(updateIf(true())) ~> AlterRow1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['dim_cow_id'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date = var_yesterday,\n\t\tgroup,\n\t\tlast_updated = var_current_timestamp\n\t)) ~> SetCowEnddate3"
 				}
 			},
 			"dependsOn": []
@@ -412,7 +412,7 @@
 							"name": "UpdateAvailable"
 						}
 					],
-					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nCreateDateTimestamp1 filter(end_date == toDate('9999-01-01')) ~> activeDBcows\nactiveDBcows, StagingCows exists(lifenumber == life_number,\n\tnegate:false,\n\tbroadcast: 'auto')~> activatecows\nDWHCows derive(current_date = currentDate(),\n\t\tyesterday = addDays(currentDate(),-1),\n\t\tcurrent_timestamp = currentTimestamp(),\n\t\tend_date = toDate('9999-01-01')) ~> CreateDateTimestamp1\nactivatecows, StagingCows join(lifenumber == life_number,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> CombineApiDimCow\nCombineApiDimCow filter(leg_responder != responder1 || neck_responder != responder2 || group != group_id || cownumber != number) ~> UpdateAvailable\nUpdateAvailable sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date,\n\t\tgroup,\n\t\tlast_updated = current_timestamp\n\t)) ~> SetCowNew3"
+					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nCreateDateTimestamp1 filter(var_end_date == toDate('9999-01-01')) ~> activeDBcows\nactiveDBcows, StagingCows exists(lifenumber == life_number,\n\tnegate:false,\n\tbroadcast: 'auto')~> activatecows\nDWHCows derive(var_current_date = currentDate(),\n\t\tvar_yesterday = addDays(currentDate(),-1),\n\t\tvar_current_timestamp = currentTimestamp(),\n\t\tvar_end_date = toDate('9999-01-01')) ~> CreateDateTimestamp1\nactivatecows, StagingCows join(lifenumber == life_number,\n\tjoinType:'inner',\n\tmatchType:'exact',\n\tignoreSpaces: false,\n\tbroadcast: 'auto')~> CombineApiDimCow\nCombineApiDimCow filter(end_date == toDate('9999-01-01') && leg_responder != responder1 || \r\nend_date == toDate('9999-01-01') && neck_responder != responder2 || \r\nend_date == toDate('9999-01-01') && group != group_id || \r\nend_date == toDate('9999-01-01') && cownumber != number) ~> UpdateAvailable\nUpdateAvailable sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date = var_end_date,\n\t\tgroup,\n\t\tlast_updated = var_current_timestamp\n\t)) ~> SetCowNew3"
 				}
 			},
 			"dependsOn": []
@@ -774,421 +774,10 @@
 							"name": "UpdateIfTrue1"
 						}
 					],
-					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nCreateDateTimestamp1 filter(end_date == toDate('9999-01-01')) ~> activeDBcows\nactiveDBcows, StagingCows exists(lifenumber == life_number,\n\tnegate:true,\n\tbroadcast: 'left')~> removedcows\nDWHCows derive(current_date = currentDate(),\n\t\tyesterday = addDays(currentDate(),-1),\n\t\tcurrent_timestamp = currentTimestamp(),\n\t\tend_date = toDate('9999-01-01')) ~> CreateDateTimestamp1\nremovedcows alterRow(updateIf(true())) ~> UpdateIfTrue1\nUpdateIfTrue1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['dim_cow_id'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date = yesterday,\n\t\tgroup,\n\t\tlast_updated\n\t)) ~> SetCowEnddate1"
+					"script": "source(output(\n\t\tid as long,\n\t\tcondition as string,\n\t\tlife_number as string,\n\t\tresponder1 as long,\n\t\tresponder2 as long,\n\t\tresponder3 as string,\n\t\tnumber as integer,\n\t\tuuid as string,\n\t\tgroup_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> StagingCows\nsource(output(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> DWHCows\nCreateDateTimestamp1 filter(end_date == toDate('9999-01-01')) ~> activeDBcows\nactiveDBcows, StagingCows exists(lifenumber == life_number,\n\tnegate:true,\n\tbroadcast: 'left')~> removedcows\nDWHCows derive(var_current_date = currentDate(),\n\t\tyesterday = addDays(currentDate(),-1),\n\t\tcurrent_timestamp = currentTimestamp(),\n\t\tend_date = toDate('9999-01-01')) ~> CreateDateTimestamp1\nremovedcows alterRow(updateIf(true())) ~> UpdateIfTrue1\nUpdateIfTrue1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tdim_cow_id as integer,\n\t\tlifenumber as string,\n\t\tleg_responder as long,\n\t\tneck_responder as long,\n\t\tcownumber as integer,\n\t\tnedap_id as long,\n\t\tstart_date as date,\n\t\tend_date as date,\n\t\tgroup as integer,\n\t\tlast_updated as timestamp\n\t),\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['dim_cow_id'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tmapColumn(\n\t\tdim_cow_id,\n\t\tlifenumber,\n\t\tleg_responder,\n\t\tneck_responder,\n\t\tcownumber,\n\t\tnedap_id,\n\t\tstart_date,\n\t\tend_date = yesterday,\n\t\tgroup,\n\t\tlast_updated\n\t)) ~> SetCowEnddate1"
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Update_Cows')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "new_cows",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "Copy Cows To Staging",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "1.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "V2 new_cows",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"StagingCows": {},
-									"DWHCows": {},
-									"SetCowNew1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Truncate Staging",
-						"description": "Empties staging tables ",
-						"type": "Lookup",
-						"dependsOn": [
-							{
-								"activity": "V2 Update Cows no update",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "AzurePostgreSqlSource",
-								"query": "truncate staging.nedapcowid;\nselect 0 id;",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "table_staging_nedapcowactivityneck",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "execute_refresh_token",
-						"description": "executes the \"refresh_access_token\" pipeline so we have a fresh access token",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "refresh_acces_token",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Copy Cows To Staging",
-						"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "execute_refresh_token",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET",
-								"paginationRules": {
-									"supportRFC5988": "true"
-								}
-							},
-							"sink": {
-								"type": "AzurePostgreSQLSink",
-								"writeBatchSize": 1000000,
-								"writeBatchTimeout": "00:30:00",
-								"preCopyScript": "truncate staging.nedapcowid\n",
-								"writeMethod": "CopyCommand"
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"path": "[['id']"
-										},
-										"sink": {
-											"name": "id",
-											"type": "Int64"
-										}
-									},
-									{
-										"source": {
-											"path": "[['condition']"
-										},
-										"sink": {
-											"name": "condition",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "[['group_id']"
-										},
-										"sink": {
-											"name": "group_id",
-											"type": "Int32"
-										}
-									},
-									{
-										"source": {
-											"path": "[['life_number']"
-										},
-										"sink": {
-											"name": "life_number",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "[['responder1']"
-										},
-										"sink": {
-											"name": "responder1",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "[['responder2']"
-										},
-										"sink": {
-											"name": "responder2",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "[['responder3']"
-										},
-										"sink": {
-											"name": "responder3",
-											"type": "String"
-										}
-									},
-									{
-										"source": {
-											"path": "[['number']"
-										},
-										"sink": {
-											"name": "number",
-											"type": "Int32"
-										}
-									},
-									{
-										"source": {
-											"path": "[['uuid']"
-										},
-										"sink": {
-											"name": "uuid",
-											"type": "String"
-										}
-									}
-								],
-								"collectionReference": "$['animals']",
-								"mapComplexValuesToString": false
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "API_GetCows",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "table_staging_nedapcowid",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					},
-					{
-						"name": "removed_cows",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "new_cows",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "V2 removed_cows",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"StagingCows": {},
-									"DWHCows": {},
-									"SetCowEnddate1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "update cows end_date",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "removed_cows",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "V2 Update Cows update available end_date",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"StagingCows": {},
-									"DWHCows": {},
-									"SetCowEnddate3": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "update cows set new date",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "update cows end_date",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "V2 Update Cows update available set new cow",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"StagingCows": {},
-									"DWHCows": {},
-									"SetCowNew3": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "V2 Update Cows no update",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "update cows set new date",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "V2 Update Cows no update",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"StagingCows": {},
-									"DWHCows": {},
-									"UpdateCowLastUpdated": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"variables": {
-					"start_date": {
-						"type": "String"
-					},
-					"end_date": {
-						"type": "String"
-					}
-				},
-				"annotations": [],
-				"lastPublishTime": "2022-10-20T14:58:40Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/V2 new_cows')]",
-				"[concat(variables('factoryId'), '/datasets/API_GetCows')]",
-				"[concat(variables('factoryId'), '/dataflows/V2 removed_cows')]",
-				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows update available end_date')]",
-				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows update available set new cow')]",
-				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows no update')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Hoeve Pipeline')]",
@@ -2388,7 +1977,7 @@
 						"type": "ExecuteDataFlow",
 						"dependsOn": [
 							{
-								"activity": "Update Cows In DWH",
+								"activity": "Get Facts To Staging",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -2459,27 +2048,6 @@
 								"type": "Expression"
 							}
 						}
-					},
-					{
-						"name": "Update Cows In DWH",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Get Facts To Staging",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Update_Cows",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
 					}
 				],
 				"policy": {
@@ -2500,13 +2068,454 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/API_GetCows')]",
 				"[concat(variables('factoryId'), '/dataflows/V2 Update Facts Dataflow')]",
-				"[concat(variables('factoryId'), '/pipelines/Update_Cows')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowStanding')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowStandups')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowWalking')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowNeckActivity')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetCowSteps')]",
 				"[concat(variables('factoryId'), '/datasets/API_GetHeatData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Update_Cows')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "new_cows",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Copy Cows To Staging",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 new_cows",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StagingCows": {},
+									"DWHCows": {},
+									"SetCowNew1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Truncate Staging",
+						"description": "Empties staging tables ",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "V2 Update Cows no update",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "truncate staging.nedapcowid;\nselect 0 id;",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "table_staging_nedapcowactivityneck",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "execute_refresh_token",
+						"description": "executes the \"refresh_access_token\" pipeline so we have a fresh access token",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "refresh_acces_token",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Copy Cows To Staging",
+						"description": "Empties the staging nedapcowid and gets the current livestock on hoeve_boveneind",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "execute_refresh_token",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "AzurePostgreSQLSink",
+								"writeBatchSize": 1000000,
+								"writeBatchTimeout": "00:30:00",
+								"preCopyScript": "truncate staging.nedapcowid\n",
+								"writeMethod": "CopyCommand"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['id']"
+										},
+										"sink": {
+											"name": "id",
+											"type": "Int64"
+										}
+									},
+									{
+										"source": {
+											"path": "[['condition']"
+										},
+										"sink": {
+											"name": "condition",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['group_id']"
+										},
+										"sink": {
+											"name": "group_id",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"path": "[['life_number']"
+										},
+										"sink": {
+											"name": "life_number",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['responder1']"
+										},
+										"sink": {
+											"name": "responder1",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['responder2']"
+										},
+										"sink": {
+											"name": "responder2",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['responder3']"
+										},
+										"sink": {
+											"name": "responder3",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"path": "[['number']"
+										},
+										"sink": {
+											"name": "number",
+											"type": "Int32"
+										}
+									},
+									{
+										"source": {
+											"path": "[['uuid']"
+										},
+										"sink": {
+											"name": "uuid",
+											"type": "String"
+										}
+									}
+								],
+								"collectionReference": "$['animals']",
+								"mapComplexValuesToString": false
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "API_GetCows",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "table_staging_nedapcowid",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "removed_cows",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "new_cows",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 removed_cows",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StagingCows": {},
+									"DWHCows": {},
+									"SetCowEnddate1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "update cows end_date",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "removed_cows",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 Update Cows update available end_date",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StagingCows": {},
+									"DWHCows": {},
+									"SetCowEnddate3": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "update cows set new date",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "update cows end_date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 Update Cows update available set new cow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StagingCows": {},
+									"DWHCows": {},
+									"SetCowNew3": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "V2 Update Cows no update",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "update cows set new date",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "V2 Update Cows no update",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"StagingCows": {},
+									"DWHCows": {},
+									"UpdateCowLastUpdated": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"start_date": {
+						"type": "String"
+					},
+					"end_date": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-10-20T14:58:40Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/V2 new_cows')]",
+				"[concat(variables('factoryId'), '/datasets/API_GetCows')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 removed_cows')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows update available end_date')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows update available set new cow')]",
+				"[concat(variables('factoryId'), '/dataflows/V2 Update Cows no update')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Hoeve Trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Triggers the Hoeve Pipeline every 4 days.",
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Hoeve Pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 4,
+						"startTime": "2022-02-27T06:00:00",
+						"timeZone": "W. Europe Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Hoeve Pipeline')]"
 			]
 		},
 		{
@@ -2545,37 +2554,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Update_Cows')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Hoeve Trigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Triggers the Hoeve Pipeline every 4 days.",
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Hoeve Pipeline",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 4,
-						"startTime": "2022-02-27T06:00:00",
-						"timeZone": "W. Europe Standard Time"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Hoeve Pipeline')]"
 			]
 		}
 	]
