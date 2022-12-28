@@ -1180,7 +1180,7 @@
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Update Cows In DWH",
+						"activity": "Get Facts To Staging",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -1230,26 +1230,6 @@
 						"value": "@addDays(startOfDay(utcnow()), 0)",
 						"type": "Expression"
 					}
-				}
-			},
-			{
-				"name": "Update Cows In DWH",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "Get Facts To Staging",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "Update_Cows",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
 				}
 			}
 		],
