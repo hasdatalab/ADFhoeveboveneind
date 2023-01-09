@@ -173,7 +173,7 @@
 				"     pickup: 'any',",
 				"     broadcast: 'right')~> ErrorCodeLookup",
 				"ErrorCodeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
-				"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
+				"DimCow filter(end_date == toDate('9999-01-01')) ~> activeDBcows",
 				"NullFilter output(mapColumn(",
 				"          dim_cow_id,",
 				"          dim_error_code_id,",

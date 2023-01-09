@@ -131,7 +131,7 @@
 				"          TimeCalc = trim(split(toString(date),' ')[2])) ~> SplitDateTime",
 				"TimeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> NullFilter",
 				"CowLookup derive(attention = toBoolean(attention)) ~> DatatypeConversie",
-				"DimCows filter(isNull(end_date) == true()) ~> activeDBcow",
+				"DimCows filter(end_date == toDate('9999-01-01')) ~> activeDBcow",
 				"NullFilter output(mapColumn(",
 				"          total,",
 				"          average,",

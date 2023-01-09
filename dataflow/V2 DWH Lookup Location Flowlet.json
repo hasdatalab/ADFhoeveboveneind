@@ -100,7 +100,7 @@
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> DateLookup",
 				"DateLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false()) ~> Nullfilter",
-				"DimCow filter(isNull(end_date) == true()) ~> activeDBcows",
+				"DimCow filter(end_date == toDate('9999-01-01')) ~> activeDBcows",
 				"Nullfilter output(mapColumn(",
 				"          each(match(true()))",
 				"     )) ~> CowLocation"

@@ -44,6 +44,9 @@
 					"name": "filter1"
 				},
 				{
+					"name": "activeDBcows"
+				},
+				{
 					"name": "StagingInput"
 				},
 				{
@@ -109,7 +112,7 @@
 				"     schemaName: 'warehouse',",
 				"     store: 'postgres',",
 				"     isolationLevel: 'READ_UNCOMMITTED') ~> DimCow",
-				"StagingInput, DimCow lookup(animal_id == nedap_id,",
+				"StagingInput, activeDBcows lookup(animal_id == nedap_id,",
 				"     multiple: true,",
 				"     broadcast: 'right')~> CowLookup",
 				"CowLookup derive(DateCalc = trim(split(toString(quarter),' ')[1]),",
@@ -121,6 +124,7 @@
 				"     multiple: true,",
 				"     broadcast: 'auto')~> timeLookup",
 				"timeLookup filter(isNull(dim_cow_id) == false() && isNull(dim_date_id) == false() && isNull(dim_time_id) == false()) ~> filter1",
+				"DimCow filter(end_date == toDate('9999-01-01')) ~> activeDBcows",
 				"filter1 output(mapColumn(",
 				"          total,",
 				"          dim_cow_id,",
