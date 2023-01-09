@@ -1214,7 +1214,7 @@
 				"typeProperties": {
 					"variableName": "start_date",
 					"value": {
-						"value": "@addDays(startOfDay(utcnow()), -21)",
+						"value": "@addDays(startOfDay(utcnow()), -20)",
 						"type": "Expression"
 					}
 				}
